@@ -1,48 +1,70 @@
-
 #include <iostream>
 #include <string>
 #include <vector>
 using namespace std;
-class run{
-    public:
+
+class run {
+public:
     int x[32];
-    x[0]=0;
-    int pc=0;
+    int pc;
+
+    run() {
+        pc = 0;
+        for (int i = 0; i < 32; ++i) {
+            x[i] = 0;
+        }
+    }
+
     void instructionFetch();
     void instructionDecode(string j);
+    void execute(vector<string>& v);
 };
 
-void run::instructionFetch(){
+void run::instructionFetch() {
     string s;
-    getline(cin,s);
-    pc++;
+    getline(cin, s);
     instructionDecode(s);
 }
 
 void run::instructionDecode(string instruction) {
-    int temp=0;
-    vector <string> v;
+    vector<string> v;
     string token;
     for (char c : instruction) {
         if (c != ' ') {
             token += c;
-        } 
-        else {
+        } else {
             v.push_back(token);
-            if(token=="add" || token=="addi" || token=="sub" || token == "subi"){
-                temp=1;
-            }
-            else if(token=="lw" || token == "sw"){
-                temp=2;
-            }
-            else if(token == "bne" || token =="beq"){
-                temp=3;
-            }
             token.clear();
         }
     }
     if (!token.empty()) {
         v.push_back(token);
+    }
+
+    execute(v);
+}
+
+void run::execute(vector<string>& v) {
+    string opcode = v[0];
+    if (opcode == "add") {
+        int rd = stoi(v[1].substr(1));
+        int rs1 = stoi(v[2].substr(1));
+        int rs2 = stoi(v[3].substr(1));
+        x[rd] = x[rs1] + x[rs2];
+    } else if (opcode == "sub") {
+        int rd = stoi(v[1].substr(1));
+        int rs1 = stoi(v[2].substr(1));
+        int rs2 = stoi(v[3].substr(1));
+        x[rd] = x[rs1] - x[rs2];
+    } else if (opcode == "lw") {
+        
+    } else if (opcode == "sw") {
+        
+    } else if (opcode == "bne") {
+        
+    } else if (opcode == "beq") {
+        
+    } else {
     }
 }
 
