@@ -1,0 +1,53 @@
+
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+class run{
+    public:
+    int x[32];
+    x[0]=0;
+    int pc=0;
+    void instructionFetch();
+    void instructionDecode(string j);
+};
+
+void run::instructionFetch(){
+    string s;
+    getline(cin,s);
+    pc++;
+    instructionDecode(s);
+}
+
+void run::instructionDecode(string instruction) {
+    int temp=0;
+    vector <string> v;
+    string token;
+    for (char c : instruction) {
+        if (c != ' ') {
+            token += c;
+        } 
+        else {
+            v.push_back(token);
+            if(token=="add" || token=="addi" || token=="sub" || token == "subi"){
+                temp=1;
+            }
+            else if(token=="lw" || token == "sw"){
+                temp=2;
+            }
+            else if(token == "bne" || token =="beq"){
+                temp=3;
+            }
+            token.clear();
+        }
+    }
+    if (!token.empty()) {
+        v.push_back(token);
+    }
+}
+
+int main() {
+    run r;
+    r.instructionFetch();
+    return 0;
+}
