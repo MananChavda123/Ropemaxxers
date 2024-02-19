@@ -27,6 +27,9 @@ public:
 void run::instructionFetch() {
     string s;
     getline(cin, s);
+     if(input.is_open()){
+        input>>s;
+        }
     instructionDecode(s);
 }
 
@@ -85,7 +88,6 @@ void run::execute(vector<string>& v) {
         int rs2 = stoi(v[3]);
         x[rd][0] = x[rs1][0] * x[rs2][0];
     }
-    
     else if (opcode == "lw") {
         int rd = stoi(v[1].substr(1));
         addressAdder=v[2];
