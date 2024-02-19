@@ -5,25 +5,30 @@ using namespace std;
 
 class run {
 public:
-    int x[32];
+    int x[32][32];
     int pc;
 
     run() {
         pc = 0;
-        for (int i = 0; i < 32; ++i) {
-            x[i] = 0;
+        for (int i = 0; i < 32; i++) {
+            for(int j=0;j<32;j++)
+                x[i][j] = 0;
         }
     }
 
     void instructionFetch();
     void instructionDecode(string j);
     void execute(vector<string>& v);
+    void jump(string label);
+    void lw(int rd, int rs1, int imm);
+    void sw(int rd, int rs1, int imm);
 };
 
 void run::instructionFetch() {
     string s;
     getline(cin, s);
     instructionDecode(s);
+    pc++;
 }
 
 void run::instructionDecode(string instruction) {
@@ -46,27 +51,109 @@ void run::instructionDecode(string instruction) {
 
 void run::execute(vector<string>& v) {
     string opcode = v[0];
+    string addressAdder="";
+    string temp="";
+    int t=0;
+    int addressFinder=0;
     if (opcode == "add") {
         int rd = stoi(v[1].substr(1));
         int rs1 = stoi(v[2].substr(1));
         int rs2 = stoi(v[3].substr(1));
-        x[rd] = x[rs1] + x[rs2];
-    } else if (opcode == "sub") {
+        x[rd][0] = x[rs1][0] + x[rs2][0];
+    } 
+    else if (opcode == "sub") {
         int rd = stoi(v[1].substr(1));
         int rs1 = stoi(v[2].substr(1));
         int rs2 = stoi(v[3].substr(1));
-        x[rd] = x[rs1] - x[rs2];
-    } else if (opcode == "lw") {
+        x[rd][0] = x[rs1][0] - x[rs2][0];
+    } 
+    else if (opcode == "addi") {
+        int rd = stoi(v[1].substr(1));
+        int rs1 = stoi(v[2].substr(1));
+        int rs2 = stoi(v[3]);
+        x[rd][0] = x[rs1][0] + x[rs2][0];
+    }
+    else if (opcode == "subi") {
+        int rd = stoi(v[1].substr(1));
+        int rs1 = stoi(v[2].substr(1));
+        int rs2 = stoi(v[3]);
+        x[rd][0] = x[rs1][0] - x[rs2][0];
+    }
+    else if (opcode == "mul") {
+        int rd = stoi(v[1].substr(1));
+        int rs1 = stoi(v[2].substr(1));
+        int rs2 = stoi(v[3]);
+        x[rd][0] = x[rs1][0] * x[rs2][0];
+    }
+    
+    else if (opcode == "lw") {
+        int rd = stoi(v[1].substr(1));
+        int rs1 = stoi(v[2].substr(1)); 
+        int imm = stoi(v[3]); 
+        lw(rd, rs1, imm); 
+    }
+ 
+    else if (opcode == "sw") {
+    int rs1 = stoi(v[1].substr(1)); 
+    int rs2 = stoi(v[2].substr(1)); 
+    int imm = stoi(v[3]); 
+    sw(rs1, rs2, imm); 
+    }
+ 
+    else if (opcode == "bne") {
+        int rd = stoi(v[1].substr(1));
+        int rs1 = stoi(v[2].substr(1));
         
-    } else if (opcode == "sw") {
+        if(x[rd][0] != x[rs1][0]){
+            string label;
+            label = v[3];
+            jump(label);
+        }
+    } 
+    else if (opcode == "beq") {
+        int rd = stoi(v[1].substr(1));
+        int rs1 = stoi(v[2].substr(1));
         
-    } else if (opcode == "bne") {
-        
-    } else if (opcode == "beq") {
-        
-    } else {
+        if(x[rd][0] == x[rs1][0]){
+            string label;
+            label = v[3];
+            jump(label);
+        }
+    } 
+    else if(opcode == "j" || opcode == "jump"){
+        string label;
+        label = v[1];
+        jump(label);
+    }
+    else {
     }
 }
+
+void run::jump(string label){
+
+}
+
+void run::lw(int rd, int rs1, int imm) {
+    int address = x[rs1][0] + imm;
+    if (address >= 0 && address < 32) {
+        x[rd][0] = x[address][0];
+    } 
+    else {
+        cout << "Error: Attempted to load from out-of-bounds memory address." << endl;
+    }
+}
+
+void run::sw(int rs1, int rs2, int imm) {
+    int address = x[rs1][0] + imm;
+    
+    if (address >= 0 && address < 32) {
+        x[address][0] = x[rs2][0];
+    } 
+    else {
+        cout << "Error: Attempted to store to out-of-bounds memory address." << endl;
+    }
+}
+
 
 int main() {
     run r;
