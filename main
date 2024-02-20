@@ -74,13 +74,13 @@ void run::execute(vector<string>& v) {
         int rd = stoi(v[1].substr(1));
         int rs1 = stoi(v[2].substr(1));
         int rs2 = stoi(v[3]);
-        x[rd][0] = x[rs1][0] + x[rs2][0];
+        x[rd][0] = x[rs1][0] + rs2;
     }
     else if (opcode == "subi") {
         int rd = stoi(v[1].substr(1));
         int rs1 = stoi(v[2].substr(1));
         int rs2 = stoi(v[3]);
-        x[rd][0] = x[rs1][0] - x[rs2][0];
+        x[rd][0] = x[rs1][0] - rs2;
     }
     else if (opcode == "mul") {
         int rd = stoi(v[1].substr(1));
