@@ -1,10 +1,10 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <map>
+#include<map>
 using namespace std;
 
-class core {
+class core{
 public:
     int x[32][32];
     int pc;
@@ -18,19 +18,17 @@ public:
         }
     }
 
-    void instructionFetch();
+    void instructionFetch(vector<string> &memory);
     void instructionDecode(string j);
     void execute(vector<string>& v);
     void jump(string label);
 };
 
-void core::instructionFetch() {
+void core::instructionFetch(vector<string> &memory) {
     string s;
-    if(getline(cin, s))
-    //  if(input.is_open()){
-    //     input>>s;
-    //     }
+    s=memory[pc];
     instructionDecode(s);
+    pc = pc + 1;
 }
 
 void core::instructionDecode(string instruction) {
@@ -192,38 +190,39 @@ void core::jump(string label){
     
     return;
 }
+
+
 class processor{
 private:
-        
+        std::vector<core> cores;
         vector<string> memory;
         int clock;
 public:
-std::vector<core> cores;
+        
         processor(){
         memory.resize(4096);
-        for(int i=0;i<4096;++i)
-        {
+        for(int i =0 ;i<4096;++i){
             memory[i] = "";
         }
         cores.resize(2);
+        core r1,r2;
+        r1 = cores[0];
+        r2 = cores[1];
         clock = 0; 
         }
         void run(){
-        while(clock < max(cores[0].v.size(),cores[1].v.size())){
-            for(int i=0;i<2;++i){
-                if(clock<cores[i].v.size()){
-                cores[i].execute(cores[i].v);
+            while(clock < max(cores[0].v.size(),cores[1].v.size())){
+                for(int i=0;i<2;++i){
+                    if(clock<cores[i].v.size()){
+                        cores[i].execute(cores[i].v);
+                    }
                 }
             }
         }
-    }
-      
-    void memoryFetch(){
+        void memoryFetch(){
         string t;
-        
         if(getline(cin,t)){
-            while(memory[cores[0].pc]!="exit")
-            {
+            while(memory[cores[0].pc]=="addi x0 x0 0"){
                 getline(cin,t);
                 memory.push_back(t);
                 cores[0].pc = cores[0].pc + 1;
@@ -236,7 +235,5 @@ std::vector<core> cores;
 int main() {
     core r;
     processor sim;
-    sim.cores[0] = r; // Assign cores[0] to r
-    r.instructionFetch();
     return 0;
 }
