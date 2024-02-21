@@ -3,15 +3,14 @@
 #include <vector>
 using namespace std;
 
-class run {
+class core {
 public:
     int x[32][32];
     int pc;
-    int clock;
+     vector<string> v;
 
-    run() {
+    core() {
         pc = 0;
-        clock = 0;
         for (int i = 0; i < 32; i++) {
             for(int j=0;j<32;j++)
                 x[i][j] = 0;
@@ -34,7 +33,7 @@ void run::instructionFetch() {
 }
 
 void run::instructionDecode(string instruction) {
-    vector<string> v;
+   
     string token;
     for (char c : instruction) {
         if (c != ' ') {
@@ -47,7 +46,6 @@ void run::instructionDecode(string instruction) {
     if (!token.empty()) {
         v.push_back(token);
     }
-    clock++;
 
     execute(v);
 }
@@ -171,15 +169,39 @@ void run::execute(vector<string>& v) {
     }
     else {
     }
-    clock++:
+    pc++:
 }
 
 void run::jump(string label){
+    
     return;
 }
+class processor{
+private:
+        std::vector<core> cores;
+        vector<int> memory;
+        int clock;
+public:
+        processor(){
+        memory.resize(4096);
+        memory.assign(4096,0);
+        cores.resize(2);
+        clock = 0; 
+        }
+        void run(){
+        while(clock < max(cores[0].v.size,cores[1].v.size)){
+        for(int i=0;i<2;++i){
+        if(clock<cores[i].v.size){
+        cores[i].execute(cores[i].v)
+        }
+}
+}
+}
+}
+        
 
 int main() {
-    run r;
+    core r;
     r.instructionFetch();
     return 0;
 }
