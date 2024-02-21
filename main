@@ -228,6 +228,7 @@ public:
                 cores[0].pc = cores[0].pc + 1;
             }
             cores[0].pc=0;
+            cores[0].instructionFetch(memory);
         }
     }
 };
