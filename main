@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <map>
 using namespace std;
 
 class core {
@@ -25,23 +26,35 @@ public:
 
 void core::instructionFetch() {
     string s;
-    getline(cin, s);
+    if(getline(cin, s))
     //  if(input.is_open()){
     //     input>>s;
     //     }
     instructionDecode(s);
-pc = pc + 4;
 }
 
 void core::instructionDecode(string instruction) {
    
     string token;
+
     for (char c : instruction) {
         if (c != ' ') {
             token += c;
         } else {
             v.push_back(token);
             token.clear();
+        }
+    }
+    string newi = "";
+    map<string,int> m;
+    for(char c : token)
+    {
+        if(c == ':')
+        {
+            m.insert({newi,pc});
+        }
+        else{
+            newi = newi + c;
         }
     }
     if (!token.empty()) {
@@ -143,6 +156,9 @@ void core::execute(vector<string>& v) {
         x[rs1][addressFinder] = x[rd][0]; 
         temp="";t=0;
     } 
+    else if(opcode == ".data"){
+        
+    }
     else if (opcode == "bne") {
         int rd = stoi(v[1].substr(1));
         int rs1 = stoi(v[2].substr(1));
@@ -178,30 +194,49 @@ void core::jump(string label){
 }
 class processor{
 private:
-        std::vector<core> cores;
-        vector<int> memory;
+        
+        vector<string> memory;
         int clock;
 public:
+std::vector<core> cores;
         processor(){
         memory.resize(4096);
-        memory.assign(4096,0);
+        for(int i=0;i<4096;++i)
+        {
+            memory[i] = "";
+        }
         cores.resize(2);
         clock = 0; 
         }
         void run(){
-            while(clock < max(cores[0].v.size(),cores[1].v.size())){
-                for(int i=0;i<2;++i){
-                    if(clock<cores[i].v.size()){
-                        cores[i].execute(cores[i].v);
-                    }
+        while(clock < max(cores[0].v.size(),cores[1].v.size())){
+            for(int i=0;i<2;++i){
+                if(clock<cores[i].v.size()){
+                cores[i].execute(cores[i].v);
                 }
             }
         }
+    }
+      
+    void memoryFetch(){
+        string t;
+        
+        if(getline(cin,t)){
+            while(memory[cores[0].pc]!="exit")
+            {
+                getline(cin,t);
+                memory.push_back(t);
+                cores[0].pc = cores[0].pc + 1;
+            }
+        }
+    }
 };
         
 
 int main() {
     core r;
+    processor sim;
+    sim.cores[0] = r; // Assign cores[0] to r
     r.instructionFetch();
     return 0;
 }
