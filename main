@@ -222,11 +222,12 @@ public:
         void memoryFetch(){
         string t;
         if(getline(cin,t)){
-            while(memory[cores[0].pc]=="addi x0 x0 0"){
+            while(memory[cores[0].pc]!="addi x0 x0 0"){
                 getline(cin,t);
                 memory.push_back(t);
                 cores[0].pc = cores[0].pc + 1;
             }
+            cores[0].pc=0;
         }
     }
 };
