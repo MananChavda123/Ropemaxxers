@@ -23,16 +23,17 @@ public:
     void jump(string label);
 };
 
-void run::instructionFetch() {
+void core::instructionFetch() {
     string s;
     getline(cin, s);
-     if(input.is_open()){
-        input>>s;
-        }
+    //  if(input.is_open()){
+    //     input>>s;
+    //     }
     instructionDecode(s);
+pc = pc + 4;
 }
 
-void run::instructionDecode(string instruction) {
+void core::instructionDecode(string instruction) {
    
     string token;
     for (char c : instruction) {
@@ -50,7 +51,7 @@ void run::instructionDecode(string instruction) {
     execute(v);
 }
 
-void run::execute(vector<string>& v) {
+void core::execute(vector<string>& v) {
     string opcode = v[0];
     string addressAdder="";
     string temp="";
@@ -169,10 +170,9 @@ void run::execute(vector<string>& v) {
     }
     else {
     }
-    pc++:
 }
 
-void run::jump(string label){
+void core::jump(string label){
     
     return;
 }
@@ -189,15 +189,15 @@ public:
         clock = 0; 
         }
         void run(){
-        while(clock < max(cores[0].v.size,cores[1].v.size)){
-        for(int i=0;i<2;++i){
-        if(clock<cores[i].v.size){
-        cores[i].execute(cores[i].v)
+            while(clock < max(cores[0].v.size(),cores[1].v.size())){
+                for(int i=0;i<2;++i){
+                    if(clock<cores[i].v.size()){
+                        cores[i].execute(cores[i].v);
+                    }
+                }
+            }
         }
-}
-}
-}
-}
+};
         
 
 int main() {
