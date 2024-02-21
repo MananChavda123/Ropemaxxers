@@ -200,8 +200,8 @@ private:
 public:
         
         processor(){
-        memory.resize(4096);
-        for(int i =0 ;i<4096;++i){
+        memory.resize(256);
+        for(int i =0 ;i<256;++i){
             memory[i] = "";
         }
         cores.resize(2);
