@@ -9,6 +9,8 @@ public:
     int x[32][32];
     int pc;
      vector<string> v;
+     map<string,int> m;
+     vector <string> newmemory;
 
     core() {
         pc = 0;
@@ -18,15 +20,16 @@ public:
         }
     }
 
-    void instructionFetch(vector<string> &memory);
+    void instructionFetch();
     void instructionDecode(string j);
     void execute(vector<string>& v);
     void jump(string label);
 };
 
-void core::instructionFetch(vector<string> &memory) {
+void core::instructionFetch() {
     string s;
-    s=memory[pc];
+    s=newmemory[pc];
+    cout<<newmemory[pc];
     instructionDecode(s);
     pc = pc + 1;
 }
@@ -43,18 +46,7 @@ void core::instructionDecode(string instruction) {
             token.clear();
         }
     }
-    string newi = "";
-    map<string,int> m;
-    for(char c : token)
-    {
-        if(c == ':')
-        {
-            m.insert({newi,pc});
-        }
-        else{
-            newi = newi + c;
-        }
-    }
+   
     if (!token.empty()) {
         v.push_back(token);
     }
@@ -187,7 +179,8 @@ void core::execute(vector<string>& v) {
 }
 
 void core::jump(string label){
-    
+    pc = m[label];
+    instructionFetch();
     return;
 }
 
@@ -198,7 +191,7 @@ private:
         vector<string> memory;
         int clock;
 public:
-        
+            map<string,int> mnew;
         processor(){
         memory.resize(256);
         for(int i =0 ;i<256;++i){
@@ -221,21 +214,40 @@ public:
         }
         void memoryFetch(){
         string t;
-        if(getline(cin,t)){
-            while(memory[cores[0].pc]!="addi x0 x0 0"){
+            getline(cin,t);
+            memory.push_back(t);
+            cout<<memory[cores[0].pc];
+            while(t!="exit"){
                 getline(cin,t);
+                // cout<<t;
                 memory.push_back(t);
+                // cout<<memory[2];
                 cores[0].pc = cores[0].pc + 1;
-            }
-            cores[0].pc=0;
-            cores[0].instructionFetch(memory);
+                 string newi = "";
+
+    for(char c : t)
+    {
+        if(c == ':')
+        {
+            mnew.insert({newi,cores[0].pc});
+        }
+        else{
+            newi = newi + c;
         }
     }
-};
+            }
+            cores[0].pc=0;
+            cores[0].newmemory = memory;
+            cores[0].m = mnew;
+        }
+    }
+;
         
 
 int main() {
     core r;
     processor sim;
+    sim.memoryFetch();
+    r.instructionFetch();
     return 0;
 }
