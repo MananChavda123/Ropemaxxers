@@ -215,13 +215,11 @@ public:
         void memoryFetch(){
         string t;
             getline(cin,t);
-            memory.push_back(t);
-            cout<<memory[cores[0].pc];
+            memory[cores[0].pc]=t;
+            cores[0].pc = cores[0].pc + 1;
             while(t!="exit"){
                 getline(cin,t);
-                // cout<<t;
-                memory.push_back(t);
-                // cout<<memory[2];
+                memory[cores[0].pc]=t;
                 cores[0].pc = cores[0].pc + 1;
                  string newi = "";
 
