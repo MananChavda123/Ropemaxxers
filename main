@@ -12,10 +12,10 @@ public:
     core() {
         pc = 0;
         for (int i = 0; i < 32 ; i++) {
-            x[i] = i;
+            x[i] = 0;
         }
     }
-
+    
     void instructionFetch(int memory[]);
     void instructionDecode(string j,int memory[]);
     void execute(vector<string>& v,int memory[]);
@@ -27,12 +27,11 @@ void core::instructionFetch(int memory[]) {
 
     string s;
     getline(cin, s);
-        instructionDecode(s,memory);
+    instructionDecode(s,memory);
     
 }
 
 void core::instructionDecode(string instruction,int memory[]) {
-   
     string token;
     for (char c : instruction) {
         if (c != ' ') {
@@ -53,9 +52,8 @@ void core::execute(vector<string>& v,int memory[]) {
     string opcode = v[0];
     string addressAdder="";
     string temp="";
-
+    
     int newmemory2[1024];
-   
     int t=0;
     int offset=0;
     if (opcode == "add") {
@@ -77,7 +75,7 @@ void core::execute(vector<string>& v,int memory[]) {
         x[rd] = x[rs1] + imm;
         cout<<x[rd];
     }
-        else if (opcode == "lw") {
+    else if (opcode == "lw") {
         int rd = stoi(v[1].substr(1));
         addressAdder=v[2];
         for(char d : addressAdder){
@@ -107,48 +105,45 @@ void core::execute(vector<string>& v,int memory[]) {
         int rs1 = stoi(temp.substr(1));
         cout<<&memory<<endl;
         unsigned long long int xavi = reinterpret_cast<unsigned long long int>(memory) ;
-        cout<<xavi<<endl;
         xavi = xavi + offset;
-        cout<<offset<<endl;
         x[rs1]=xavi;
-        cout<<x[rs1]<<endl;
         int* array_ptr = reinterpret_cast<int*>(xavi);
         x[rd] = *array_ptr; 
-        cout<<x[rd]<<endl;
-        temp="";t=0;
-        for(int i=0;i<1024;++i){
-            cout<<memory[i]<<" ";
-        }
-    } 
-    else if (opcode == "sw") {
-        int rd = stoi(v[1].substr(1));
-        addressAdder=v[2];
-        for(char d : addressAdder){
-            if(isdigit(d)){
-                temp+=d;
-            }
-            else{
-                break;
-            }
-        }
-        offset = stoi(temp);
-        temp="";
-        for(char d : addressAdder){
-            if(d=='x'){
-                temp+=d;
-                t=1;
-            }
-            if(t==1){
-               if(isdigit(d)){
-                    temp+=d;
-                } 
-            }
-        }
-        int rs1 = stoi(temp.substr(1));
-          unsigned long long int* xavi = reinterpret_cast<unsigned long long int*>(x[rs1] + offset);
-        *xavi = x[rd];
         temp="";t=0;
     } 
+else if (opcode == "sw") {
+    int rd = stoi(v[1].substr(1));
+    addressAdder = v[2];
+    for (char d : addressAdder) {
+        if (isdigit(d)) {
+            temp += d;
+        } else {
+            break;
+        }
+    }
+    offset = stoi(temp);
+    temp = "";
+    for (char d : addressAdder) {
+        if (d == 'x') {
+            temp += d;
+            t = 1;
+        }
+        if (t == 1) {
+            if (isdigit(d)) {
+                temp += d;
+            }
+        }
+    }
+    int rs1 = stoi(temp.substr(1));
+    int* memory_ptr = reinterpret_cast<int*>(x[rs1] + offset);
+    *memory_ptr = x[rd];
+     for(int i=0;i<1024;i++){
+            cout<<memory[i]<<" ";    
+        }
+    temp = "";
+    t = 0;
+}
+
     else if (opcode == "bne") {
         int rd = stoi(v[1].substr(1));
         int rs1 = stoi(v[2].substr(1));
@@ -177,6 +172,7 @@ void core::execute(vector<string>& v,int memory[]) {
     else {
     }
     pc++;
+    v.clear();
 }
 
 void core::jump(string label){
@@ -200,13 +196,14 @@ public:
     
     void run(){
         cores[0].instructionFetch(memory);
-        while(clock < max(cores[0].v.size(),cores[1].v.size())){
-            for(int i=0;i<2;++i){
-                if(clock<cores[i].v.size()){
-                    cores[0].instructionFetch(memory);
-                }
-            }
-        }
+        cores[0].instructionFetch(memory);
+        // while(clock < max(cores[0].v.size(),cores[1].v.size())){
+        //     for(int i=0;i<2;++i){
+        //         if(clock<cores[i].v.size()){
+        //             cores[0].instructionFetch(memory);
+        //         }
+        //     }
+        // }
     }
     
 };
