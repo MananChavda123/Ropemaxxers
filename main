@@ -227,7 +227,7 @@ public:
     
     void run(){
         cores[0].instructionFetch(memory);
-        cores[0].instructionFetch(memory);
+        
         // while(clock < max(cores[0].v.size(),cores[1].v.size())){
         //     for(int i=0;i<2;++i){
         //         if(clock<cores[i].v.size()){
