@@ -104,9 +104,8 @@ void core::execute(vector<string>& v,int memory[]) {
         memory[2]=10;
         int rs1 = stoi(temp.substr(1));
         cout<<&memory<<endl;
-        unsigned long long int xavi = reinterpret_cast<unsigned long long int>(memory) ;
-        xavi = xavi + offset;
-        x[rs1]=xavi;
+        x[rs1] = reinterpret_cast<unsigned long long int>(memory) ;
+        unsigned long long int xavi=x[rs1]+offset;
         int* array_ptr = reinterpret_cast<int*>(xavi);
         x[rd] = *array_ptr; 
         temp="";t=0;
