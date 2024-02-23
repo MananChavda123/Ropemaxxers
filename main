@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <vector>
 using namespace std;
@@ -8,30 +9,44 @@ public:
     unsigned long long int x[32]; 
     int pc;
     vector<string> v;
-  
+        std::string filename1;
+
     core() {
         pc = 0;
         for (int i = 0; i < 32 ; i++) {
             x[i] = 0;
         }
+         filename1 = R"(C:\Users\havis\OneDrive\Desktop\New Text Document.txt)";
+        std::ifstream infile(filename1);
+        if(infile.is_open())
+        {
+           std::cout<<"Success"<<std::endl;
+        }
+        infile.close();
     }
     
     void instructionFetch(int memory[]);
-    void instructionDecode(string j,int memory[]);
+    void instructionDecode(const string& j,int memory[]);
     void execute(vector<string>& v,int memory[]);
-    void jump(string label);
+    void jump(const string& label,const string& filename1,int memory[]);
 };
 
 void core::instructionFetch(int memory[]) {
     
+    ifstream inputFile(filename1);
+    if (!inputFile.is_open()) {
+        cerr << "Error: Unable to open file " << filename1 << endl;
+        return;
+    }
 
     string s;
-    getline(cin, s);
-    instructionDecode(s,memory);
-    
+    while (getline(inputFile, s)) {
+        instructionDecode(s,memory);
+    }
+    inputFile.close();
 }
 
-void core::instructionDecode(string instruction,int memory[]) {
+void core::instructionDecode(const string& instruction,int memory[]) {
     string token;
     for (char c : instruction) {
         if (c != ' ') {
@@ -44,7 +59,6 @@ void core::instructionDecode(string instruction,int memory[]) {
     if (!token.empty()) {
         v.push_back(token);
     }
-
     execute(v,memory);
 }
 
@@ -52,8 +66,6 @@ void core::execute(vector<string>& v,int memory[]) {
     string opcode = v[0];
     string addressAdder="";
     string temp="";
-    
-    int newmemory2[1024];
     int t=0;
     int offset=0;
     if (opcode == "add") {
@@ -61,6 +73,7 @@ void core::execute(vector<string>& v,int memory[]) {
         int rs1 = stoi(v[2].substr(1));
         int rs2 = stoi(v[3].substr(1));
         x[rd] = x[rs1] + x[rs2];
+        cout<<x[rd];
     } 
     else if (opcode == "sub") {
         int rd = stoi(v[1].substr(1));
@@ -99,11 +112,8 @@ void core::execute(vector<string>& v,int memory[]) {
                 } 
             }
         }
-        memory[0]=10;
-        memory[1]=1232;
-        memory[2]=10;
+        
         int rs1 = stoi(temp.substr(1));
-        cout<<&memory<<endl;
         x[rs1] = reinterpret_cast<unsigned long long int>(memory) ;
         unsigned long long int xavi=x[rs1]+offset;
         int* array_ptr = reinterpret_cast<int*>(xavi);
@@ -150,7 +160,7 @@ else if (opcode == "sw") {
         if(x[rd] != x[rs1]){
             string label;
             label = v[3];
-            jump(label);
+            jump(label,filename1,memory);
         }
     } 
     else if (opcode == "beq") {
@@ -160,13 +170,13 @@ else if (opcode == "sw") {
         if(x[rd] == x[rs1]){
             string label;
             label = v[3];
-            jump(label);
+            jump(label,filename1,memory);
         }
     } 
     else if(opcode == "j" || opcode == "jump"){
         string label;
         label = v[1];
-        jump(label);
+        jump(label,filename1,memory);
     }
     else {
     }
@@ -174,8 +184,30 @@ else if (opcode == "sw") {
     v.clear();
 }
 
-void core::jump(string label){
-    pc = stoi(label);
+void core::jump(const string& label,const string& filename1,int memory[]){
+    ifstream inputFile(filename1);
+    if (!inputFile.is_open()) {
+        cerr << "Error: Unable to open file " << filename1 << endl;
+        return;
+    }
+
+    string s;
+    bool foundLabel = false;
+    while (getline(inputFile, s)) {
+        if (foundLabel) {
+            instructionDecode(s,memory);
+        } else {
+            string lowercaseS;
+            for (char c : s) {
+                lowercaseS += c;
+            }
+            size_t pos = lowercaseS.find(label);
+            if (pos != string::npos) {
+                foundLabel = true;
+            }
+        }
+    }
+    inputFile.close();
 }
 
 class processor{
@@ -203,8 +235,7 @@ public:
         //         }
         //     }
         // }
-    }
-    
+    }   
 };
         
 
