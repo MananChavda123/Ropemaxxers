@@ -1,43 +1,39 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include<map>
 using namespace std;
 
-class core{
+class core {
 public:
-    int x[32][32];
+    unsigned long long int x[32]; 
     int pc;
-     vector<string> v;
-     map<string,int> m;
-     vector <string> newmemory;
-
+    vector<string> v;
+  
     core() {
         pc = 0;
-        for (int i = 0; i < 32; i++) {
-            for(int j=0;j<32;j++)
-                x[i][j] = 0;
+        for (int i = 0; i < 32 ; i++) {
+            x[i] = i;
         }
     }
 
-    void instructionFetch();
-    void instructionDecode(string j);
-    void execute(vector<string>& v);
+    void instructionFetch(int memory[]);
+    void instructionDecode(string j,int memory[]);
+    void execute(vector<string>& v,int memory[]);
     void jump(string label);
 };
 
-void core::instructionFetch() {
+void core::instructionFetch(int memory[]) {
+    
+
     string s;
-    s=newmemory[pc];
-    cout<<newmemory[pc];
-    instructionDecode(s);
-    pc = pc + 1;
+    getline(cin, s);
+        instructionDecode(s,memory);
+    
 }
 
-void core::instructionDecode(string instruction) {
+void core::instructionDecode(string instruction,int memory[]) {
    
     string token;
-
     for (char c : instruction) {
         if (c != ' ') {
             token += c;
@@ -46,51 +42,42 @@ void core::instructionDecode(string instruction) {
             token.clear();
         }
     }
-   
     if (!token.empty()) {
         v.push_back(token);
     }
 
-    execute(v);
+    execute(v,memory);
 }
 
-void core::execute(vector<string>& v) {
+void core::execute(vector<string>& v,int memory[]) {
     string opcode = v[0];
     string addressAdder="";
     string temp="";
+
+    int newmemory2[1024];
+   
     int t=0;
-    int addressFinder=0;
+    int offset=0;
     if (opcode == "add") {
         int rd = stoi(v[1].substr(1));
         int rs1 = stoi(v[2].substr(1));
         int rs2 = stoi(v[3].substr(1));
-        x[rd][0] = x[rs1][0] + x[rs2][0];
+        x[rd] = x[rs1] + x[rs2];
     } 
     else if (opcode == "sub") {
         int rd = stoi(v[1].substr(1));
         int rs1 = stoi(v[2].substr(1));
         int rs2 = stoi(v[3].substr(1));
-        x[rd][0] = x[rs1][0] - x[rs2][0];
+        x[rd] = x[rs1] - x[rs2];
     } 
     else if (opcode == "addi") {
         int rd = stoi(v[1].substr(1));
         int rs1 = stoi(v[2].substr(1));
-        int rs2 = stoi(v[3]);
-        x[rd][0] = x[rs1][0] + rs2;
+        int imm = stoi(v[3]);
+        x[rd] = x[rs1] + imm;
+        cout<<x[rd];
     }
-    else if (opcode == "subi") {
-        int rd = stoi(v[1].substr(1));
-        int rs1 = stoi(v[2].substr(1));
-        int rs2 = stoi(v[3]);
-        x[rd][0] = x[rs1][0] - rs2;
-    }
-    else if (opcode == "mul") {
-        int rd = stoi(v[1].substr(1));
-        int rs1 = stoi(v[2].substr(1));
-        int rs2 = stoi(v[3]);
-        x[rd][0] = x[rs1][0] * x[rs2][0];
-    }
-    else if (opcode == "lw") {
+        else if (opcode == "lw") {
         int rd = stoi(v[1].substr(1));
         addressAdder=v[2];
         for(char d : addressAdder){
@@ -101,7 +88,7 @@ void core::execute(vector<string>& v) {
                 break;
             }
         }
-        addressFinder = stoi(temp)/4;
+        offset = stoi(temp);
         temp="";
         for(char d : addressAdder){
             if(d=='x'){
@@ -114,9 +101,24 @@ void core::execute(vector<string>& v) {
                 } 
             }
         }
-        int rs1 = stoi(v[2].substr(1));
-        x[rd][0] = x[rs1][addressFinder]; 
+        memory[0]=10;
+        memory[1]=1232;
+        memory[2]=10;
+        int rs1 = stoi(temp.substr(1));
+        cout<<&memory<<endl;
+        unsigned long long int xavi = reinterpret_cast<unsigned long long int>(memory) ;
+        cout<<xavi<<endl;
+        xavi = xavi + offset;
+        cout<<offset<<endl;
+        x[rs1]=xavi;
+        cout<<x[rs1]<<endl;
+        int* array_ptr = reinterpret_cast<int*>(xavi);
+        x[rd] = *array_ptr; 
+        cout<<x[rd]<<endl;
         temp="";t=0;
+        for(int i=0;i<1024;++i){
+            cout<<memory[i]<<" ";
+        }
     } 
     else if (opcode == "sw") {
         int rd = stoi(v[1].substr(1));
@@ -129,7 +131,7 @@ void core::execute(vector<string>& v) {
                 break;
             }
         }
-        addressFinder = stoi(temp)/4;
+        offset = stoi(temp);
         temp="";
         for(char d : addressAdder){
             if(d=='x'){
@@ -142,18 +144,16 @@ void core::execute(vector<string>& v) {
                 } 
             }
         }
-        int rs1 = stoi(v[2].substr(1));
-        x[rs1][addressFinder] = x[rd][0]; 
+        int rs1 = stoi(temp.substr(1));
+          unsigned long long int* xavi = reinterpret_cast<unsigned long long int*>(x[rs1] + offset);
+        *xavi = x[rd];
         temp="";t=0;
     } 
-    else if(opcode == ".data"){
-        
-    }
     else if (opcode == "bne") {
         int rd = stoi(v[1].substr(1));
         int rs1 = stoi(v[2].substr(1));
         
-        if(x[rd][0] != x[rs1][0]){
+        if(x[rd] != x[rs1]){
             string label;
             label = v[3];
             jump(label);
@@ -163,7 +163,7 @@ void core::execute(vector<string>& v) {
         int rd = stoi(v[1].substr(1));
         int rs1 = stoi(v[2].substr(1));
         
-        if(x[rd][0] == x[rs1][0]){
+        if(x[rd] == x[rs1]){
             string label;
             label = v[3];
             jump(label);
@@ -176,76 +176,46 @@ void core::execute(vector<string>& v) {
     }
     else {
     }
+    pc++;
 }
 
 void core::jump(string label){
-    pc = m[label];
-    instructionFetch();
-    return;
+    pc = stoi(label);
 }
-
 
 class processor{
 private:
-        std::vector<core> cores;
-        vector<string> memory;
-        int clock;
+    std::vector<core> cores;
+    int memory[1024];
+    int clock;
 public:
-            map<string,int> mnew;
-        processor(){
-        memory.resize(256);
-        for(int i =0 ;i<256;++i){
-            memory[i] = "";
-        }
+    processor(){
+       
         cores.resize(2);
-        core r1,r2;
-        r1 = cores[0];
-        r2 = cores[1];
+        core c1;
+        c1 = cores[0];
         clock = 0; 
-        }
-        void run(){
-            while(clock < max(cores[0].v.size(),cores[1].v.size())){
-                for(int i=0;i<2;++i){
-                    if(clock<cores[i].v.size()){
-                        cores[i].execute(cores[i].v);
-                    }
+     
+    }
+    
+    void run(){
+        cores[0].instructionFetch(memory);
+        while(clock < max(cores[0].v.size(),cores[1].v.size())){
+            for(int i=0;i<2;++i){
+                if(clock<cores[i].v.size()){
+                    cores[0].instructionFetch(memory);
                 }
             }
         }
-        void memoryFetch(){
-        string t;
-            getline(cin,t);
-            memory[cores[0].pc]=t;
-            cores[0].pc = cores[0].pc + 1;
-            while(t!="exit"){
-                getline(cin,t);
-                memory[cores[0].pc]=t;
-                cores[0].pc = cores[0].pc + 1;
-                 string newi = "";
-
-    for(char c : t)
-    {
-        if(c == ':')
-        {
-            mnew.insert({newi,cores[0].pc});
-        }
-        else{
-            newi = newi + c;
-        }
     }
-            }
-            cores[0].pc=0;
-            cores[0].newmemory = memory;
-            cores[0].m = mnew;
-        }
-    }
-;
+    
+};
         
 
 int main() {
-    core r;
-    processor sim;
-    sim.memoryFetch();
-    r.instructionFetch();
+    core c;
+    processor p;
+    p.run();
+    
     return 0;
 }
