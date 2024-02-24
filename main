@@ -2,78 +2,83 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <map>
 using namespace std;
 
 class core {
 public:
     unsigned long long int x[32]; 
-    int pc;
-    vector<string> v;
-        std::string filename1;
+    int pc, size;
+    vector<string> newmemory;
+    std::string filename1 = "C:/Users/havis/OneDrive/Desktop/Project/test1.asm";
+    map<string, int> mnew;
 
     core() {
         pc = 0;
-        for (int i = 0; i < 32 ; i++) {
+        ifstream infile(filename1);
+        string t;
+        for (int i = 0; i < 32; i++) {
             x[i] = 0;
         }
-         filename1 = R"(C:\Users\havis\OneDrive\Desktop\New Text Document.txt)";
-        std::ifstream infile(filename1);
-        if(infile.is_open())
-        {
-           std::cout<<"Success"<<std::endl;
+        while (getline(infile, t)) {
+            newmemory.push_back(t);
+            pc = pc + 1;
+            string newi = "";
+            for (char c : t) {
+                if (c == ':') {
+                    mnew.insert({ newi, pc });
+                }
+                else {
+                    newi = newi + c;
+                }
+            }
         }
+        size = pc;
         infile.close();
-    }
-    
-    void instructionFetch(int memory[]);
-    void instructionDecode(const string& j,int memory[]);
-    void execute(vector<string>& v,int memory[]);
-    void jump(const string& label,const string& filename1,int memory[]);
-};
-
-void core::instructionFetch(int memory[]) {
-    
-    ifstream inputFile(filename1);
-    if (!inputFile.is_open()) {
-        cerr << "Error: Unable to open file " << filename1 << endl;
-        return;
+        pc = 0;
     }
 
-    string s;
-    while (getline(inputFile, s)) {
-        instructionDecode(s,memory);
-    }
-    inputFile.close();
-}
-
-void core::instructionDecode(const string& instruction,int memory[]) {
-    string token;
-    for (char c : instruction) {
-        if (c != ' ') {
-            token += c;
-        } else {
-            v.push_back(token);
-            token.clear();
+    string independentInstructionFetch() {
+        // cout<<newmemory[pc];
+        if (pc >= newmemory.size()) {
+            return ""; 
         }
+        string instruction = newmemory[pc];
+        pc++;
+        return instruction;
     }
-    if (!token.empty()) {
-        v.push_back(token);
-    }
-    execute(v,memory);
-}
 
-void core::execute(vector<string>& v,int memory[]) {
+    // Independent instruction decode method
+    vector<string> independentInstructionDecode(const string& instruction) {
+        vector<string> v;
+        string token;
+        for (char c : instruction) {
+            if (c != ' ') {
+                token += c;
+            }
+            else {
+                v.push_back(token);
+                token.clear();
+            }
+        }
+        if (!token.empty()) {
+            v.push_back(token);
+        }
+        return v;
+    }
+
+void independentExecute(const vector<string>& v,int memory[]){
     string opcode = v[0];
     string addressAdder="";
     string temp="";
     int t=0;
     int offset=0;
+    cout<<x[13];
     if (opcode == "add") {
         int rd = stoi(v[1].substr(1));
         int rs1 = stoi(v[2].substr(1));
         int rs2 = stoi(v[3].substr(1));
         x[rd] = x[rs1] + x[rs2];
-        cout<<x[rd];
     } 
     else if (opcode == "sub") {
         int rd = stoi(v[1].substr(1));
@@ -86,7 +91,7 @@ void core::execute(vector<string>& v,int memory[]) {
         int rs1 = stoi(v[2].substr(1));
         int imm = stoi(v[3]);
         x[rd] = x[rs1] + imm;
-        cout<<x[rd];
+        // cout<<x[rd];
     }
     else if (opcode == "lw") {
         int rd = stoi(v[1].substr(1));
@@ -120,38 +125,35 @@ void core::execute(vector<string>& v,int memory[]) {
         x[rd] = *array_ptr; 
         temp="";t=0;
     } 
-else if (opcode == "sw") {
-    int rd = stoi(v[1].substr(1));
-    addressAdder = v[2];
-    for (char d : addressAdder) {
-        if (isdigit(d)) {
-            temp += d;
-        } else {
-            break;
-        }
-    }
-    offset = stoi(temp);
-    temp = "";
-    for (char d : addressAdder) {
-        if (d == 'x') {
-            temp += d;
-            t = 1;
-        }
-        if (t == 1) {
+    else if (opcode == "sw") {
+        int rd = stoi(v[1].substr(1));
+        addressAdder = v[2];
+        for (char d : addressAdder) {
             if (isdigit(d)) {
                 temp += d;
+            } else {
+                break;
             }
         }
-    }
-    int rs1 = stoi(temp.substr(1));
-    int* memory_ptr = reinterpret_cast<int*>(x[rs1] + offset);
-    *memory_ptr = x[rd];
-     for(int i=0;i<1024;i++){
-            cout<<memory[i]<<" ";    
+        offset = stoi(temp);
+        temp = "";
+        for (char d : addressAdder) {
+            if (d == 'x') {
+                temp += d;
+                t = 1;
+            }
+            if (t == 1) {
+                if (isdigit(d)) {
+                    temp += d;
+                }
+            }
         }
-    temp = "";
-    t = 0;
-}
+        int rs1 = stoi(temp.substr(1));
+        int* memory_ptr = reinterpret_cast<int*>(x[rs1] + offset);
+        *memory_ptr = x[rd];
+        temp = "";
+        t = 0;
+    }
 
     else if (opcode == "bne") {
         int rd = stoi(v[1].substr(1));
@@ -160,89 +162,72 @@ else if (opcode == "sw") {
         if(x[rd] != x[rs1]){
             string label;
             label = v[3];
-            jump(label,filename1,memory);
+            jump(label);
+            return;
         }
+        // else{
+        //     cout<<"lund";
+        // }
     } 
     else if (opcode == "beq") {
+        // cout<<"lund";
         int rd = stoi(v[1].substr(1));
         int rs1 = stoi(v[2].substr(1));
         
         if(x[rd] == x[rs1]){
             string label;
             label = v[3];
-            jump(label,filename1,memory);
+            // cout<<"lund";
+            jump(label);
+            return;
         }
+        else{
+            // cout<<"lund";
+        }
+        
+
     } 
     else if(opcode == "j" || opcode == "jump"){
         string label;
         label = v[1];
-        jump(label,filename1,memory);
-    }
-    else {
-    }
-    pc++;
-    v.clear();
-}
-
-void core::jump(const string& label,const string& filename1,int memory[]){
-    ifstream inputFile(filename1);
-    if (!inputFile.is_open()) {
-        cerr << "Error: Unable to open file " << filename1 << endl;
+        jump(label);
         return;
-    }
-
-    string s;
-    bool foundLabel = false;
-    while (getline(inputFile, s)) {
-        if (foundLabel) {
-            instructionDecode(s,memory);
-        } else {
-            string lowercaseS;
-            for (char c : s) {
-                lowercaseS += c;
-            }
-            size_t pos = lowercaseS.find(label);
-            if (pos != string::npos) {
-                foundLabel = true;
-            }
-        }
-    }
-    inputFile.close();
+    }  
 }
 
-class processor{
+
+    void jump(const string& label) {
+        pc = mnew[label];
+    }
+};
+
+
+class processor {
 private:
     std::vector<core> cores;
     int memory[1024];
     int clock;
+
 public:
-    processor(){
-       
-        cores.resize(2);
+    processor() {
+        cores.resize(2); // Create two cores
         core c1;
-        c1 = cores[0];
-        clock = 0; 
-     
+        c1 = cores[0]; // Assign the first core
+        clock = 0;
     }
-    
-    void run(){
-        cores[0].instructionFetch(memory);
-        
-        // while(clock < max(cores[0].v.size(),cores[1].v.size())){
-        //     for(int i=0;i<2;++i){
-        //         if(clock<cores[i].v.size()){
-        //             cores[0].instructionFetch(memory);
-        //         }
-        //     }
-        // }
-    }   
+
+    void independentRun() {
+        string instruction = cores[0].independentInstructionFetch();
+        while (!instruction.empty()) {
+            vector<string> decodedInstruction = cores[0].independentInstructionDecode(instruction);
+            cores[0].independentExecute(decodedInstruction, memory);
+            instruction = cores[0].independentInstructionFetch();
+        }
+    }
 };
-        
 
 int main() {
-    core c;
     processor p;
-    p.run();
-    
+    p.independentRun(); // Start the execution of the processor
     return 0;
 }
