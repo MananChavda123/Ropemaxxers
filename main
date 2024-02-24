@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <sstream>
 using namespace std;
 
 class core {
@@ -10,7 +11,7 @@ public:
     unsigned long long int x[32]; 
     int pc, size;
     vector<string> newmemory;
-    std::string filename1 = "C:/Users/havis/OneDrive/Desktop/Project/test1.asm";
+    std::string filename1 = "C:/Users/Manan/Desktop/Manan/code.txt";
     map<string, int> mnew;
 
     core() {
@@ -39,7 +40,7 @@ public:
     }
 
     string independentInstructionFetch() {
-        // cout<<newmemory[pc];
+        cout<<newmemory[pc]<<endl;
         if (pc >= newmemory.size()) {
             return ""; 
         }
@@ -67,13 +68,13 @@ public:
         return v;
     }
 
-void independentExecute(const vector<string>& v,int memory[]){
+void independentExecute(vector<string>& v,int memory[]){
+    map<string,unsigned long long int> n;
     string opcode = v[0];
     string addressAdder="";
     string temp="";
     int t=0;
     int offset=0;
-    cout<<x[13];
     if (opcode == "add") {
         int rd = stoi(v[1].substr(1));
         int rs1 = stoi(v[2].substr(1));
@@ -94,9 +95,16 @@ void independentExecute(const vector<string>& v,int memory[]){
         // cout<<x[rd];
     }
     else if (opcode == "lw") {
+        cout<<v[2]<<endl;
         int rd = stoi(v[1].substr(1));
         addressAdder=v[2];
-        for(char d : addressAdder){
+              if(!isdigit(v[2][0])){
+                
+                    x[rd] =  reinterpret_cast<unsigned long long int>(memory);
+                    cout<<x[rd]<<endl;
+                }
+                else{
+                            for(char d : addressAdder){
             if(isdigit(d)){
                 temp+=d;
             }
@@ -122,7 +130,9 @@ void independentExecute(const vector<string>& v,int memory[]){
         x[rs1] = reinterpret_cast<unsigned long long int>(memory) ;
         unsigned long long int xavi=x[rs1]+offset;
         int* array_ptr = reinterpret_cast<int*>(xavi);
-        x[rd] = *array_ptr; 
+        x[rd] = *array_ptr;
+                }
+ 
         temp="";t=0;
     } 
     else if (opcode == "sw") {
@@ -168,6 +178,35 @@ void independentExecute(const vector<string>& v,int memory[]){
         // else{
         //     cout<<"lund";
         // }
+        v.clear();
+    } 
+     else if (opcode == "bgt") {
+        int rd = stoi(v[1].substr(1));
+        int rs1 = stoi(v[2].substr(1));
+        
+        if(x[rd] > x[rs1]){
+            string label;
+            label = v[3];
+            jump(label);
+            return;
+        }
+        // else{
+        //     cout<<"lund";
+        // }
+    } 
+    else if (opcode == "bge") {
+        int rd = stoi(v[1].substr(1));
+        int rs1 = stoi(v[2].substr(1));
+        
+        if(x[rd] >= x[rs1]){
+            string label;
+            label = v[3];
+            jump(label);
+            return;
+        }
+        // else{
+        //     cout<<"lund";
+        // }
     } 
     else if (opcode == "beq") {
         // cout<<"lund";
@@ -182,17 +221,73 @@ void independentExecute(const vector<string>& v,int memory[]){
             return;
         }
         else{
-            // cout<<"lund";
+            //  cout<<"lund";
         }
         
-
     } 
     else if(opcode == "j" || opcode == "jump"){
         string label;
         label = v[1];
         jump(label);
         return;
-    }  
+    } 
+    if(opcode==".data")
+        {
+            pc += 1;
+            while(pc < newmemory.size() && newmemory[pc] != ".text")
+            {
+                
+                string line1 = newmemory[pc];
+                string opcode1, opcode2;
+                std::istringstream iss1(line1);
+                iss1 >> opcode1 >>opcode2;
+                
+                cout<<opcode1<<" "<<opcode2;
+                // string temp="";
+                // for(char c:opcode){
+                //     if(c!=':'){
+                //         temp+=c;
+                //     }                        
+                // }
+                if(opcode2==".word")
+                {
+                    int count=0;
+                    int x;
+                    int memsize = 0;
+                    for(int i=0; i<1024; i++)
+                    {
+                        if(i==0){
+                            unsigned long long int lund = reinterpret_cast<unsigned long long int>(memory);
+                            // n.insert({temp,lund});
+                        }
+                        if(memory[i]!=0)
+                        {
+                            memsize++;
+                        }
+
+                    }
+                    printf("%d\n",&memory[0]);
+                    //  cout<<n[temp]<<endl;
+                    while(iss1 >> x)
+                    { 
+                        memory[count] = x;
+                        
+                        // if(count==1)
+                        // {
+
+                        //     info.push_back({opcode1.substr(0, opcode1.size() - 1),memsize});
+                        //     cout<<"fuckof"<<endl;
+                        // }
+
+                        count++;
+                        // memory.push_back(x);
+                    }
+                }
+
+                pc++;
+               
+            }    
+        } 
 }
 
 
@@ -205,15 +300,17 @@ void independentExecute(const vector<string>& v,int memory[]){
 class processor {
 private:
     std::vector<core> cores;
-    int memory[1024];
+    int *memory;
     int clock;
 
 public:
     processor() {
         cores.resize(2); // Create two cores
         core c1;
+        memory = new int[1024];
         c1 = cores[0]; // Assign the first core
         clock = 0;
+        printf("%d\n",&memory[0]);
     }
 
     void independentRun() {
@@ -223,11 +320,16 @@ public:
             cores[0].independentExecute(decodedInstruction, memory);
             instruction = cores[0].independentInstructionFetch();
         }
+        for(int i=0;i<1024;++i)
+        {
+            cout<<memory[i]<<" ";
+        }
     }
 };
 
 int main() {
     processor p;
     p.independentRun(); // Start the execution of the processor
+    
     return 0;
 }
