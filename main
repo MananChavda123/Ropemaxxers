@@ -8,10 +8,11 @@ using namespace std;
 
 class core {
 public:
-    long long int x[32]; 
+    long long int x[32];
+    int na=0; 
     int pc, size;
     vector<string> newmemory;
-    std::string filename1 = "C:/Users/Manan/Desktop/Manan/code.txt";
+    std::string filename1 = "C:/Users/havis/OneDrive/Desktop/Project/test1.asm";
     map<string, int> mnew;
 
     core() {
@@ -40,7 +41,7 @@ public:
     }
 
     string independentInstructionFetch() {
-        // cout<<newmemory[pc]<<endl;
+        cout<<newmemory[pc]<<" ";
         if (pc >= newmemory.size()) {
             return ""; 
         }
@@ -92,7 +93,7 @@ void independentExecute(vector<string>& v,int *memory){
         int rs1 = stoi(v[2].substr(1));
         int imm = stoi(v[3]);
         x[rd] = x[rs1] + imm;
-        // cout<<x[rd];
+        cout<<x[rd]<<endl;
     }
     else if (opcode == "lw") {
         // cout<<v[2]<<endl;
@@ -125,15 +126,16 @@ void independentExecute(vector<string>& v,int *memory){
                 } 
             }
         }
-        
         int rs1 = stoi(temp.substr(1));
-        x[rs1] = reinterpret_cast< long long int>(memory) ;
-        cout<<memory[0]<<endl;
-         long long int xavi=x[rs1]+offset;
-        int* array_ptr = reinterpret_cast<int*>(xavi);
+        if(na==0){
+            x[rs1] = reinterpret_cast< long long int>(memory);
+            na++;
+        }
+        int* array_ptr = reinterpret_cast<int*>(x[rs1]+offset);
         x[rd] = *array_ptr;
+        cout<<" "<<x[rd]<<" "<<x[rs1]<<endl;
                 }
- 
+
         temp="";t=0;
     } 
     else if (opcode == "sw") {
@@ -195,6 +197,20 @@ void independentExecute(vector<string>& v,int *memory){
         //     cout<<"lund";
         // }
     } 
+         else if (opcode == "blt") {
+        int rd = stoi(v[1].substr(1));
+        int rs1 = stoi(v[2].substr(1));
+        
+        if(x[rd] < x[rs1]){
+            string label;
+            label = v[3];
+            jump(label);
+            return;
+        }
+        // else{
+        //     cout<<"lund";
+        // }
+    } 
     else if (opcode == "bge") {
         int rd = stoi(v[1].substr(1));
         int rs1 = stoi(v[2].substr(1));
@@ -244,6 +260,12 @@ void independentExecute(vector<string>& v,int *memory){
                 iss1 >> opcode1 >>opcode2;
                 
                 cout<<opcode1<<" "<<opcode2;
+                // string temp="";
+                // for(char c:opcode){
+                //     if(c!=':'){
+                //         temp+=c;
+                //     }                        
+                // }
                 if(opcode2==".word")
                 {
                     int count=0;
@@ -252,7 +274,7 @@ void independentExecute(vector<string>& v,int *memory){
                     for(int i=0; i<1024; i++)
                     {
                         if(i==0){
-                            unsigned long long int lund = reinterpret_cast< unsigned long long int>(memory);
+                             long long int lund = reinterpret_cast< long long int>(memory);
                             // n.insert({temp,lund});
                         }
                         if(memory[i]!=0)
@@ -265,9 +287,8 @@ void independentExecute(vector<string>& v,int *memory){
                     //  cout<<n[temp]<<endl;
                     while(iss1 >> x)
                     { 
-                        cout<<x<<endl;
                         memory[count] = x;
-                        cout<<memory[0]<<endl;
+                        
                         // if(count==1)
                         // {
 
