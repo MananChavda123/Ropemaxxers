@@ -8,7 +8,7 @@ using namespace std;
 
 class core {
 public:
-    unsigned long long int x[32]; 
+    long long int x[32]; 
     int pc, size;
     vector<string> newmemory;
     std::string filename1 = "C:/Users/Manan/Desktop/Manan/code.txt";
@@ -40,7 +40,7 @@ public:
     }
 
     string independentInstructionFetch() {
-        cout<<newmemory[pc]<<endl;
+        // cout<<newmemory[pc]<<endl;
         if (pc >= newmemory.size()) {
             return ""; 
         }
@@ -68,8 +68,8 @@ public:
         return v;
     }
 
-void independentExecute(vector<string>& v,int memory[]){
-    map<string,unsigned long long int> n;
+void independentExecute(vector<string>& v,int *memory){
+    map<string, long long int> n;
     string opcode = v[0];
     string addressAdder="";
     string temp="";
@@ -95,12 +95,12 @@ void independentExecute(vector<string>& v,int memory[]){
         // cout<<x[rd];
     }
     else if (opcode == "lw") {
-        cout<<v[2]<<endl;
+        // cout<<v[2]<<endl;
         int rd = stoi(v[1].substr(1));
         addressAdder=v[2];
               if(!isdigit(v[2][0])){
                 
-                    x[rd] =  reinterpret_cast<unsigned long long int>(memory);
+                    x[rd] =  reinterpret_cast< long long int>(memory);
                     cout<<x[rd]<<endl;
                 }
                 else{
@@ -127,8 +127,9 @@ void independentExecute(vector<string>& v,int memory[]){
         }
         
         int rs1 = stoi(temp.substr(1));
-        x[rs1] = reinterpret_cast<unsigned long long int>(memory) ;
-        unsigned long long int xavi=x[rs1]+offset;
+        x[rs1] = reinterpret_cast< long long int>(memory) ;
+        cout<<memory[0]<<endl;
+         long long int xavi=x[rs1]+offset;
         int* array_ptr = reinterpret_cast<int*>(xavi);
         x[rd] = *array_ptr;
                 }
@@ -243,12 +244,6 @@ void independentExecute(vector<string>& v,int memory[]){
                 iss1 >> opcode1 >>opcode2;
                 
                 cout<<opcode1<<" "<<opcode2;
-                // string temp="";
-                // for(char c:opcode){
-                //     if(c!=':'){
-                //         temp+=c;
-                //     }                        
-                // }
                 if(opcode2==".word")
                 {
                     int count=0;
@@ -257,7 +252,7 @@ void independentExecute(vector<string>& v,int memory[]){
                     for(int i=0; i<1024; i++)
                     {
                         if(i==0){
-                            unsigned long long int lund = reinterpret_cast<unsigned long long int>(memory);
+                            unsigned long long int lund = reinterpret_cast< unsigned long long int>(memory);
                             // n.insert({temp,lund});
                         }
                         if(memory[i]!=0)
@@ -270,8 +265,9 @@ void independentExecute(vector<string>& v,int memory[]){
                     //  cout<<n[temp]<<endl;
                     while(iss1 >> x)
                     { 
+                        cout<<x<<endl;
                         memory[count] = x;
-                        
+                        cout<<memory[0]<<endl;
                         // if(count==1)
                         // {
 
@@ -323,6 +319,11 @@ public:
         for(int i=0;i<1024;++i)
         {
             cout<<memory[i]<<" ";
+        }
+        cout<<endl;
+        for(int i =0;i<32;++i)
+        {
+            cout<<cores[0].x[i]<<" ";
         }
     }
 };
