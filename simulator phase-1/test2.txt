@@ -1,43 +1,35 @@
 .data
 .data
-arr: .word 1 2 16 6 25 
+base: .word 4 2 10 61 912 100 39 
 .text
-addi x29 x0 5
-addi x25 x29 -1
-lw x8 arr
-addi x15 x0 0
-Loop1:
-beq x15 x25 exit
-add x16 x0 x15
-addi x6 x15 1
-Loop2:
-beq x6 x29 swap
-slli x7 x6 2
-slli x28 x16 2
-add x5 x8 x28
-lw x31 0(x5)
-add x5 x8 x7
-lw x30 0(x5)
-bge x30 x31 nochange
-add x16 x0 x6
-nochange:
-addi x6 x6 1
-addi x9 x0 5
-ble x6 x9 Loop2
-swap:
-slli x29 x15 2
-add x5 x29 x8
-lw x30 0(x5)
-slli x28 x16 2
-add x5 x28 x8
-lw x31 0(x5)
-add x5 x29 x8
-sw x31 0(x5)
-add x5 x28 x8
-sw x30 0(x5)
-addi x1 x0 4
-addi x15 x15 1
-blt x15 x1 Loop1
-exit:
-
-
+lw x16 base
+addi x18 x0 0
+addi x21 x0 1
+addi x12 x0 0
+addi x4 x0 6
+add x7 x0 x0
+addi x31 x0 -1
+loop:
+bge x18 x4 exit2
+addi x12 x0 0 
+lw x10 0(x16)
+loop1:
+bge x12 x4 exit1
+lw x10 0(x16)
+lw x11 4(x16)
+addi x12 x12 1
+blt x11 x10 change
+addi x16 x16 4
+j loop1
+exit1:
+lw x16, base
+addi x18 x18 1
+j loop
+change:
+lw x19 0(x16)
+lw x20 4(x16)
+sw x19 4(x16)
+sw x20 0(x16)
+addi x16, x16, 4
+j loop1
+exit2:
