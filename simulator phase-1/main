@@ -285,8 +285,8 @@ private:
 public:
     processor() {
         memory = new int[1024];
-        cores.push_back(core("C:/Users/havis/OneDrive/Desktop/Project/test1.asm"));
-        cores.push_back(core("C:/Users/havis/OneDrive/Desktop/Project/test2.txt"));
+        cores.push_back(core("C:/Users/havis/OneDrive/Desktop/Project/test1.asm"));//choose path from the provided files
+        cores.push_back(core("C:/Users/havis/OneDrive/Desktop/Project/test2.txt"));//choose path from the provided files
         clock = 0;
     }
 
