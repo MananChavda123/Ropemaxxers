@@ -10,7 +10,7 @@ We made the basic structure of the core class.First we created public variables 
 On this date,we made our next class that is processor class.In this class,we have declared variables such as clock,memory,etc and also decided to make a run class to execute both cores but for now,we just limited ourselves on making  of a single core.
 
 23/02/2024
-Then we decided to shift to the main part,our goal of today was to design memory functions such as lw,sw,etc.It was tiring to find the logic of it,(//Write your explanation here//).We also decided to work on jump function but couldn't meet the deadline.
+Then we decided to shift to the main part,our goal of today was to design memory functions such as lw,sw,etc.It was tiring to find the logic of it because we required a function such that it stores the address of the memory in the register and we required other register to find the value of the memory whose address was stored. Then , we found a inbuilt funtion(reinterpret cast) such that it can store the address of register in long long int. and other function (reinterpret cast<int *>) so that it can access the value stored in register.Thus, completing the workload of lw and sw.We also decided to work on jump function but couldn't meet the deadline.
 
 24/02/2024
 today our main goal was to find the logic of jump function,we tried manyy ways for it but still couldn't get the logic.Atlast,we came to know that we we were doing the whole function calling wrong.So,we adjusted the function calling to a different way.At first,we were calling Run() from the processor,from that processor calls instuctionfetch() from the core and then we made it to call all functions like a chain.Like this:
