@@ -12,10 +12,10 @@ public:
     int na=0; 
     int pc, size;
     vector<string> newmemory;
-    std::string filename1 = "C:/Users/havis/OneDrive/Desktop/Project/test1.asm";
+    std::string filename1;
     map<string, int> mnew;
 
-    core() {
+        core(const std::string& filename) : filename1(filename), pc(0), size(0) {
         pc = 0;
         ifstream infile(filename1);
         string t;
@@ -50,7 +50,6 @@ public:
         return instruction;
     }
 
-    // Independent instruction decode method
     vector<string> independentInstructionDecode(const string& instruction) {
         vector<string> v;
         string token;
@@ -178,9 +177,6 @@ void independentExecute(vector<string>& v,int *memory){
             jump(label);
             return;
         }
-        // else{
-        //     cout<<"lund";
-        // }
         v.clear();
     } 
      else if (opcode == "bgt") {
@@ -193,9 +189,6 @@ void independentExecute(vector<string>& v,int *memory){
             jump(label);
             return;
         }
-        // else{
-        //     cout<<"lund";
-        // }
     } 
          else if (opcode == "blt") {
         int rd = stoi(v[1].substr(1));
@@ -207,9 +200,6 @@ void independentExecute(vector<string>& v,int *memory){
             jump(label);
             return;
         }
-        // else{
-        //     cout<<"lund";
-        // }
     } 
     else if (opcode == "bge") {
         int rd = stoi(v[1].substr(1));
@@ -221,26 +211,17 @@ void independentExecute(vector<string>& v,int *memory){
             jump(label);
             return;
         }
-        // else{
-        //     cout<<"lund";
-        // }
     } 
     else if (opcode == "beq") {
-        // cout<<"lund";
         int rd = stoi(v[1].substr(1));
         int rs1 = stoi(v[2].substr(1));
         
         if(x[rd] == x[rs1]){
             string label;
             label = v[3];
-            // cout<<"lund";
             jump(label);
             return;
         }
-        else{
-            //  cout<<"lund";
-        }
-        
     } 
     else if(opcode == "j" || opcode == "jump"){
         string label;
@@ -260,12 +241,6 @@ void independentExecute(vector<string>& v,int *memory){
                 iss1 >> opcode1 >>opcode2;
                 
                 cout<<opcode1<<" "<<opcode2;
-                // string temp="";
-                // for(char c:opcode){
-                //     if(c!=':'){
-                //         temp+=c;
-                //     }                        
-                // }
                 if(opcode2==".word")
                 {
                     int count=0;
@@ -283,26 +258,13 @@ void independentExecute(vector<string>& v,int *memory){
                         }
 
                     }
-                    printf("%d\n",&memory[0]);
-                    //  cout<<n[temp]<<endl;
                     while(iss1 >> x)
                     { 
                         memory[count] = x;
-                        
-                        // if(count==1)
-                        // {
-
-                        //     info.push_back({opcode1.substr(0, opcode1.size() - 1),memsize});
-                        //     cout<<"fuckof"<<endl;
-                        // }
-
                         count++;
-                        // memory.push_back(x);
                     }
                 }
-
                 pc++;
-               
             }    
         } 
 }
@@ -322,20 +284,23 @@ private:
 
 public:
     processor() {
-        cores.resize(2); // Create two cores
-        core c1;
         memory = new int[1024];
-        c1 = cores[0]; // Assign the first core
+        cores.push_back(core("C:/Users/havis/OneDrive/Desktop/Project/test1.asm"));
+        cores.push_back(core("C:/Users/havis/OneDrive/Desktop/Project/test2.txt"));
         clock = 0;
-        printf("%d\n",&memory[0]);
     }
 
     void independentRun() {
         string instruction = cores[0].independentInstructionFetch();
-        while (!instruction.empty()) {
+        string instruction1 = cores[1].independentInstructionFetch();
+        while (!instruction.empty() && !instruction1.empty()) {
             vector<string> decodedInstruction = cores[0].independentInstructionDecode(instruction);
             cores[0].independentExecute(decodedInstruction, memory);
             instruction = cores[0].independentInstructionFetch();
+
+            decodedInstruction = cores[1].independentInstructionDecode(instruction1);
+            cores[1].independentExecute(decodedInstruction, memory+512);
+            instruction1 = cores[1].independentInstructionFetch();
         }
         for(int i=0;i<1024;++i)
         {
@@ -352,6 +317,5 @@ public:
 int main() {
     processor p;
     p.independentRun(); // Start the execution of the processor
-    
     return 0;
 }
