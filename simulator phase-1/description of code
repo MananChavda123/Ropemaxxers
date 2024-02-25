@@ -1,1 +1,64 @@
+Class: `core`
+
+Purpose:
+This class represents a single processor core in the multicore processor simulation.
+
+Attributes:
+- `x[32]`: An array representing the core's registers.
+- `na`: An integer tracking a specific state within the core.
+- `pc`: An integer representing the program counter, indicating the current instruction being executed.
+- `size`: An integer representing the size of the program memory.
+- `newmemory`: A vector storing the program instructions.
+- `filename1`: A string holding the filename of the assembly code file being executed.
+- `mnew`: A map storing labels and their corresponding program counter values.
+
+Constructor: `core(const std::string& filename)`
+- Initializes core attributes.
+- Reads the assembly code file line by line and populates `newmemory`.
+- Tracks labels and their corresponding program counter values in `mnew`.
+
+Method: `string independentInstructionFetch()`
+- Fetches the next instruction from `newmemory`.
+- Increments the program counter (`pc`).
+
+Method: `vector<string> independentInstructionDecode(const string& instruction)`
+- Decodes the fetched instruction into opcode and operands.
+- Returns a vector of strings representing the decoded instruction.
+
+Method: `void independentExecute(vector<string>& v, int *memory)`
+- Executes the decoded instruction based on its opcode and operands.
+- Performs operations like arithmetic, memory access, branching, and jumping.
+
+Method: `void jump(const string& label)`
+- Sets the program counter (`pc`) to the value corresponding to the provided label in `mnew`.
+
+ Class: `processor`
+
+Purpose:
+This class manages multiple processor cores and coordinates their execution.
+
+ Attributes:
+- `cores`: A vector storing instances of the `core` class.
+- `memory`: An array representing shared memory across all cores.
+- `clock`: An integer representing the clock cycle count.
+
+Constructor: `processor()`
+- Initializes processor attributes.
+- Creates instances of the `core` class and stores them in `cores`.
+
+Method: `void independentRun()`
+- Coordinates the execution of multiple cores.
+- Fetches instructions from each core, decodes them, and executes them sequentially.
+- Manages shared memory access among cores.
+
+ Main Function:
+
+Purpose:
+The `main` function serves as the entry point of the program.
+
+ Steps:
+1. Creates an instance of the `processor` class.
+2. Invokes the `independentRun` method to start the multicore processor simulation.
+
+
 
