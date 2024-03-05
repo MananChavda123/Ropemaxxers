@@ -10,7 +10,8 @@ using namespace std;
 class core {
 public:
     long long int x[32];
-    int na=0; 
+    int na=0;
+    int destination,value; 
     int pc, size;
     bool isStall;
     int stalls;
@@ -24,6 +25,8 @@ public:
         pc = 0;
         stalls = 0;
         isStall = false;
+        destination=0;
+        value=0;
         ifstream infile(filename1);
         string t;
         instruction="temp";
@@ -101,17 +104,18 @@ void independentExecute(vector<string>& v,int *memory){
         string opcode = v[0];
         if (opcode == "add" || opcode == "sub" || opcode == "addi" || opcode == "slli" || opcode == "srli") {
             int rd = stoi(v[1].substr(1));
+            destination = rd;
             int rs1 = stoi(v[2].substr(1));
             if (opcode == "add") {
-                x[rd] = x[rs1] + x[stoi(v[3].substr(1))];
+                value = x[rs1] + x[stoi(v[3].substr(1))];
             } else if (opcode == "sub") {
-                x[rd] = x[rs1] - x[stoi(v[3].substr(1))];
+                value = x[rs1] - x[stoi(v[3].substr(1))];
             } else if (opcode == "addi") {
-                x[rd] = x[rs1] + stoi(v[3]);
+                value = x[rs1] + stoi(v[3]);
             } else if (opcode == "slli") {
-                x[rd] = x[rs1] << stoi(v[3]);
+                value = x[rs1] << stoi(v[3]);
             } else if (opcode == "srli") {
-                x[rd] = x[rs1] >> stoi(v[3]);
+                value = x[rs1] >> stoi(v[3]);
             }
             v.clear();
         } 
@@ -174,6 +178,7 @@ void independentExecute(vector<string>& v,int *memory){
     v.clear();
 }
 void independentMemory(vector<string> &v,int memory[]){
+
     if(v.empty()){
 
     }
@@ -300,11 +305,17 @@ void independentMemory(vector<string> &v,int memory[]){
     }
 
 }
+
+void independentWriteBack(){
+    x[destination] = value;
+    destination = 0;
+    value = 0;
+    return;
+}
 int one_cycle(int memory[]){
-    if(!isStall){
+        independentWriteBack();
         independentMemory(decodedinstruction,memory);
         independentExecute(decodedinstruction,memory);
-    }
         
         
         if(!isStall){
@@ -344,8 +355,7 @@ public:
     void independentRun() {
         while (true) {
             clock=clock+1;
-            if(cores[0].one_cycle(memory) == 1){
-                cout<<"sucess";
+            if(cores[0].one_cycle(memory) == 1 ){
                 break;
             }
         }
@@ -356,7 +366,7 @@ public:
         for(int i =0;i<32;++i){
             cout<<cores[0].x[i]<<" ";
         }
-        cout<<"the no. of clock cycle is:"<<clock;
+        cout<<"the no. of clock cycle is:"<<clock + 4;
     }
 };
 
