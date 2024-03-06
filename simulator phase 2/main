@@ -52,7 +52,7 @@ public:
     }
 
     string independentInstructionFetch() {
-        cout<<"fetch"<<newmemory[pc]<<" ";
+        // cout<<"fetch"<<newmemory[pc]<<" ";
         if (pc >= newmemory.size()) {
             return ""; 
         }
@@ -63,8 +63,8 @@ public:
 
     vector<string> independentInstructionDecode(string& instruction) {
         vector<string> v;
-        cout<<"decode"<<instruction;
-        cout<<endl;
+        // cout<<"decode"<<instruction;
+        // cout<<endl;
         if(instruction.empty()){
         }
         else{
@@ -85,11 +85,101 @@ public:
         }
 
     }
+bool detectDataHazardStall() {
+    if(pc+1 < newmemory.size()){
+    string nextInstruction = newmemory[pc];
+    string nextInstruction1 = newmemory[pc+1];
+    vector<string> v1,v2;
+        // cout<<"decode"<<instruction;
+        // cout<<endl;S
+        if(nextInstruction.empty()){
 
+        }
+        else{
+            string token;
+            for (char c : nextInstruction) {
+                if (c != ' ') {
+                    token += c;
+                }
+                else {
+                    v1.push_back(token);
+                    token.clear();
+                }
+            }
+            if (!token.empty()) {
+                v1.push_back(token);
+            }
+        }
+            string opcode = v1[0];
+            
+    if (opcode == "add" || opcode == "sub" || opcode == "addi" || opcode == "slli" || opcode == "srli"){
+        int rd = stoi(v1[1].substr(1));    
+        v1.clear();
+        if(nextInstruction1.empty()){
+        }
+        else{
+            string token;
+            for (char c : nextInstruction1) {
+                if (c != ' ') {
+                    token += c;
+                }
+                else {
+                    v1.push_back(token);
+                    token.clear();
+                }
+            }
+            if (!token.empty()) {
+                v1.push_back(token);
+            }
+        }
+            if (opcode == "add" || opcode == "sub"){
+                if(rd == stoi(v1[1].substr(1)) || rd == stoi(v1[2].substr(1)) ||  rd == stoi(v1[3].substr(1))){
+                    isStall = true;
+                    stalls++;
+                    return true;
+                }
+            }
+            else if (opcode == "addi" || opcode == "slli" || opcode == "srli"){
+                // if(rd == stoi(v1[1].substr(1)) ||  rd == stoi(v1[2].substr(1))){
+                //     isStall = true;
+                //     stalls++;
+                //     return true;
+                // }
+            }
+        }
+    }
+    return false; 
+}
+
+bool dataHazardDetected(const core& currentCore, const vector<string>& nextDecodedInstruction) {
+    // Check if the next instruction uses any of the registers written by the current instruction
+    // for (int i = 1; i < nextDecodedInstruction.size(); ++i) {
+    //     if (nextDecodedInstruction[i][0] == 'x') {
+    //         int reg = stoi(nextDecodedInstruction[i].substr(1));
+    //         if (reg < 32 && reg >= 0) {
+    //             if (currentCore.x[reg] != 0) {
+    //                 return true; // Data hazard detected
+    //             }
+    //         }
+    //     }
+    // }
+    return false;
+}
+
+bool controlHazardDetected(const vector<string>& nextDecodedInstruction) {
+    // Check if the next instruction is a branch instruction
+    if (nextDecodedInstruction.size() > 0) {
+        string opcode = nextDecodedInstruction[0];
+        if (opcode == "bne" || opcode == "bgt" || opcode == "blt" || opcode == "bge" || opcode == "ble" || opcode == "beq" || opcode == "j" || opcode == "jump") {
+            return true; // Control hazard detected
+        }
+    }
+    return false;
+}
 void independentExecute(vector<string>& v,int *memory){
-    cout<<"execute";
+    // cout<<"execute";
     for(int i=0;i<v.size();i++){
-        cout<<v[i];
+        // cout<<v[i];
     }
     cout<<endl;
     map<string, long long int> n;
@@ -313,6 +403,23 @@ void independentWriteBack(){
     return;
 }
 int one_cycle(int memory[]){
+    if(detectDataHazardStall()){
+        independentWriteBack();
+        independentMemory(decodedinstruction,memory);
+        
+        
+        
+        if(!isStall){
+            independentExecute(decodedinstruction,memory);
+            decodedinstruction = independentInstructionDecode(instruction);
+            if(instruction.empty()){
+                return 1;
+            }
+        instruction =  independentInstructionFetch();
+        }
+        
+    }
+    else{
         independentWriteBack();
         independentMemory(decodedinstruction,memory);
         independentExecute(decodedinstruction,memory);
@@ -325,6 +432,8 @@ int one_cycle(int memory[]){
                 return 1;
             }
         instruction =  independentInstructionFetch();
+    }
+        
         isStall=false;
 }
 
@@ -354,10 +463,11 @@ public:
 
     void independentRun() {
         while (true) {
-            clock=clock+1;
+            
             if(cores[0].one_cycle(memory) == 1 ){
                 break;
             }
+            clock=clock+1;
         }
         for(int i=0;i<1024;++i){
             cout<<memory[i]<<" ";
@@ -366,7 +476,7 @@ public:
         for(int i =0;i<32;++i){
             cout<<cores[0].x[i]<<" ";
         }
-        cout<<"the no. of clock cycle is:"<<clock + 4;
+        cout<<"the no. of clock cycle is:"<<clock;
     }
 };
 
