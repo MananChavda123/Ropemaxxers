@@ -495,6 +495,22 @@ int one_cycle(int memory[]){
             independentWriteBack();       
             decodedinstruction = independentInstructionDecode(instruction);  
     }
+    else if(detectDataHazardStall()){
+        if(instruction.empty()){
+            t++;
+            if(t==4+stalls){
+                return 1;
+            }         
+        }
+        independentMemory(decodedinstruction,memory);
+        independentWriteBack();   
+        independentExecute(decodedinstruction,memory);
+            if(!isStall){    
+            decodedinstruction = independentInstructionDecode(instruction);
+        }
+            instruction =  independentInstructionFetch();
+    
+    }
     else{
         if(instruction.empty()){
             t++;
