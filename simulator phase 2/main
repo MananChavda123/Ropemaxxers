@@ -16,6 +16,9 @@ public:
     bool isStall, isStall1;
     int stalls;
     int clock1;
+    int predictorCorrect;
+    int predictorIncorrect;
+    map<int, int> predictorTable;
     int instructionCount;
     vector <string> v1,v2;
     vector<string> newmemory;
@@ -24,7 +27,7 @@ public:
     std::string filename1;
     map<string, int> mnew;
 
-        core(const std::string& filename) : filename1(filename), pc(0), size(0) {
+    core(const std::string& filename) : filename1(filename), pc(0), size(0), predictorCorrect(0), predictorIncorrect(0) {
         pc = 0;
         stalls = 0;
         t=0;
@@ -37,6 +40,9 @@ public:
         ifstream infile(filename1);
         string t;
         instruction="temp";
+        for (int i = 0; i < size; ++i) {
+            predictorTable[i] = 2;
+        }
         for (int i = 0; i < 32; i++) {
             x[i] = 0;
         }
@@ -520,8 +526,18 @@ void independentExecute(vector<string>& v,int *memory){
     v1 = v;
     v.clear();
 }
-void independentMemory(vector<string> &v,int memory[]){
+bool isBranchInstruction(const string instruction) {
+    return instruction.size() >= 2 && instruction[0] == 'b' && isalpha(instruction[1]);
+}
+int getCurrentPC() {
+    return pc; 
+}
+bool getActualBranchOutcome(const string instruction) {
+    return true;
+}
 
+
+void independentMemory(vector<string> &v,int memory[]){
     if(v2.empty()){
 
     }
@@ -532,6 +548,17 @@ void independentMemory(vector<string> &v,int memory[]){
     // }
     // cout<<endl;
     // map<string, long long int> n;
+            if (isBranchInstruction(v[0])) {
+            int pc = getCurrentPC(); 
+            bool actualOutcome = getActualBranchOutcome(v[0]); 
+            bool predictedOutcome = predictBranch(pc); 
+            updatePredictor(pc, actualOutcome); 
+            if (predictedOutcome == actualOutcome) {
+                predictorCorrect++;
+            } else {
+                predictorIncorrect++;
+            }
+        }
     string addressAdder="";
     string temp="";
     int t=0;
@@ -660,6 +687,22 @@ void independentWriteBack(){
     v1.clear();
     return;
 }
+    bool predictBranch(int pc) {
+        int prediction = predictorTable[pc];
+        return (prediction >= 2);
+    }
+    void updatePredictor(int pc, bool actualOutcome) {
+        int& prediction = predictorTable[pc];
+        if (actualOutcome) {
+            if (prediction < 3) {
+                prediction++;
+            }
+        } else {
+            if (prediction > 0) {
+                prediction--;
+            }
+        }
+    }
 int one_cycle(int memory[]){
     if(detectMemoryHazardStall()){
         if(instruction.empty()){
@@ -737,6 +780,10 @@ int one_cycle(int memory[]){
     void jump(const string& label) {
         isStall=true;
         pc = mnew[label];
+    }
+    void getPredictorStatistics(int& correct, int& incorrect) {
+        correct = predictorCorrect;
+        incorrect = predictorIncorrect;
     }
 };
 
