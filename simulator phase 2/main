@@ -15,6 +15,8 @@ public:
     int pc, size, t;
     bool isStall, isStall1;
     int stalls;
+    int clock1;
+    int instructionCount;
     vector <string> v1,v2;
     vector<string> newmemory;
     string instruction;
@@ -26,6 +28,8 @@ public:
         pc = 0;
         stalls = 0;
         t=0;
+        instructionCount=0;
+        clock1 = 0;
         isStall = false;
         isStall1 = false;
         destination=0;
@@ -36,7 +40,6 @@ public:
         for (int i = 0; i < 32; i++) {
             x[i] = 0;
         }
-        x[1] = 100;
         while (getline(infile, t)) {
             newmemory.push_back(t);
             pc = pc + 1;
@@ -56,23 +59,20 @@ public:
     }
 
     string independentInstructionFetch() {
-        // cout<<"fetch"<<newmemory[pc]<<" ";
-        
         if (pc >= newmemory.size()) {
             return ""; 
         }
+        else{
         string instruction = newmemory[pc];
+        instructionCount++;
         pc++;
         return instruction;
+        }
+        
     }
 
     vector<string> independentInstructionDecode(string& instruction) {
         vector<string> v;
-        // cout<<"decode"<<instruction;
-        // cout<<endl;
-        // if(detectDataHazardStall()){
-        //     isStall1 = true;
-        // }
         if(instruction.empty()){
         }
         else{
@@ -97,9 +97,7 @@ bool detectDataHazardStall() {
     string nextInstruction = newmemory[pc];
     string nextInstruction1 = newmemory[pc+1];
     vector<string> v1,v2;
-        // cout<<"decode"<<nextInstruction;
-        // cout<<"decode"<<nextInstruction1;
-        // cout<<endl;S
+
         if(nextInstruction.empty()){
 
         }
@@ -119,7 +117,6 @@ bool detectDataHazardStall() {
             }
         }
             string opcode = v1[0];
-            // cout<<opcode;
     if (opcode == "add" || opcode == "sub" || opcode == "addi" || opcode == "slli" || opcode == "srli" ){
         int rd = stoi(v1[1].substr(1));    
         // cout<<rd;
@@ -168,6 +165,7 @@ bool detectDataHazardStall() {
 }
 
 bool detectMemoryHazardStall() {
+    clock1++;
     if(pc+1 < newmemory.size()){
     string nextInstruction = newmemory[pc];
     string nextInstruction1 = newmemory[pc+1];
@@ -248,7 +246,7 @@ void independentExecute(vector<string>& v,int *memory){
     for(int i=0;i<v.size();i++){
         // cout<<v[i];
     }
-    cout<<endl;
+    // cout<<endl;
     map<string, long long int> n;
     string addressAdder="";
     string temp="";
@@ -361,7 +359,7 @@ void independentMemory(vector<string> &v,int memory[]){
               if(!isdigit(v2[2][0])){
                 
                     x[rd] =  reinterpret_cast< long long int>(memory);
-                    cout<<x[rd]<<endl;
+                    // cout<<x[rd]<<endl;
                 }
                 else{
         for(char d : addressAdder){
@@ -388,7 +386,7 @@ void independentMemory(vector<string> &v,int memory[]){
         int rs1 = stoi(temp.substr(1));
         int* array_ptr = reinterpret_cast<int*>(x[rs1]+offset);
         x[rd] = *array_ptr;
-        cout<<" "<<x[rd]<<" "<<x[rs1]+offset<<endl;
+        // cout<<" "<<x[rd]<<" "<<x[rs1]+offset<<endl;
                 }
 
         temp="";t=0;
@@ -495,26 +493,10 @@ int one_cycle(int memory[]){
             independentWriteBack();       
             decodedinstruction = independentInstructionDecode(instruction);  
     }
-    else if(detectDataHazardStall()){
-        if(instruction.empty()){
-            t++;
-            if(t==4+stalls){
-                return 1;
-            }         
-        }
-        independentMemory(decodedinstruction,memory);
-        independentWriteBack();   
-        independentExecute(decodedinstruction,memory);
-            if(!isStall){    
-            decodedinstruction = independentInstructionDecode(instruction);
-        }
-            instruction =  independentInstructionFetch();
-    
-    }
     else{
         if(instruction.empty()){
             t++;
-            if(t==4+stalls){
+            if(t == 4+stalls){
                 return 1;
             }         
         }
@@ -524,7 +506,10 @@ int one_cycle(int memory[]){
             if(!isStall){    
             decodedinstruction = independentInstructionDecode(instruction);
         }
+        if(!instruction.empty()){
             instruction =  independentInstructionFetch();
+        }
+            
     
     }
         isStall1=false;
@@ -543,7 +528,7 @@ private:
     std::vector<core> cores;
     int *memory;
     int clock;
-    int clock1;
+    
     vector<string> decodedInstruction;
 
 public:
@@ -552,27 +537,49 @@ public:
         cores.push_back(core("C:/Users/havis/OneDrive/Desktop/Project/test1.asm"));//choose path from the provided files
         cores.push_back(core("C:/Users/havis/OneDrive/Desktop/Project/test4.txt"));//choose path from the provided files
         clock = 0;
-        clock1 = 0;
     }
 
-    void independentRun() {
-        while (true) {
-            
-            if(cores[0].one_cycle(memory) == 1 ){
-                break;
+void independentRun() {
+    bool core0_finished = false;
+    bool core1_finished = false;
+
+    while (!core0_finished || !core1_finished) {
+        if (!core0_finished) {
+            if (cores[0].one_cycle(memory) == 1) {
+                core0_finished = true;
             }
-            clock=clock+1;
         }
-        for(int i=0;i<1024;++i){
-            cout<<memory[i]<<" ";
+
+        if (!core1_finished) {
+            if (cores[1].one_cycle(memory + 512) == 1) {
+                core1_finished = true;
+            }
         }
+
+        clock++;
+    }
+
+    for (int i = 0; i < 1024; ++i) {
+        cout << memory[i] << " ";
+    }
+    cout<<endl;
+        cout<<"the no. of clock cycle for first program is:"<<cores[0].clock1<<endl;
+        cout<<"the no. of Stalls for first program is:"<<cores[0].stalls<<endl;
+        cout<<"the no. of IPC for first program is:"<<(float)cores[0].instructionCount/cores[0].clock1;
         cout<<endl;
         for(int i =0;i<32;++i){
             cout<<cores[0].x[i]<<" ";
         }
-        cout<<"the no. of clock cycle is:"<<clock<<endl;
-        cout<<"stalls"<<cores[0].stalls;
-    }
+        cout << endl;
+        for (int i = 0; i < 32; ++i) {
+            cout << cores[1].x[i] << " ";
+        }
+        cout<<endl;
+        cout << "the no. of clock cycle for second program is:" << cores[1].clock1 << endl;
+        cout << "the no. of Stalls for second program is:" << cores[1].stalls<<endl;
+        cout<<"the no. of IPC for first program is:"<<(float)cores[1].instructionCount/cores[1].clock1;
+}
+
 };
 
 int main() {
