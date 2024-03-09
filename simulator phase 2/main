@@ -73,6 +73,33 @@ public:
 
     vector<string> independentInstructionDecode(string& instruction) {
         vector<string> v;
+        if(detectDataHazardStall()){
+            isStall1 = true;
+        }
+        if(instruction.empty()){
+        }
+        else{
+            string token;
+            for (char c : instruction) {
+                if (c != ' ') {
+                    token += c;
+                }
+                else {
+                    v.push_back(token);
+                    token.clear();
+                }
+            }
+            if (!token.empty()) {
+                v.push_back(token);
+            }   
+        }
+    return v;
+    }
+    vector<string> independentInstructionDecode1(string& instruction) {
+        vector<string> v;
+        if(detectDataHazardStall1()){
+            isStall1 = true;
+        }
         if(instruction.empty()){
         }
         else{
@@ -163,6 +190,77 @@ bool detectDataHazardStall() {
     }
     return false; 
 }
+bool detectDataHazardStall1() {
+    if(pc+1 < newmemory.size()){
+    string nextInstruction = newmemory[pc];
+    string nextInstruction1 = newmemory[pc+1];
+    vector<string> v1,v2;
+
+        if(nextInstruction.empty()){
+
+        }
+        else{
+            string token;
+            for (char c : nextInstruction) {
+                if (c != ' ') {
+                    token += c;
+                }
+                else {
+                    v1.push_back(token);
+                    token.clear();
+                }
+            }
+            if (!token.empty()) {
+                v1.push_back(token);
+            }
+        }
+            string opcode = v1[0];
+    if (opcode == "add" || opcode == "sub" || opcode == "addi" || opcode == "slli" || opcode == "srli" ){
+        int rd = stoi(v1[1].substr(1));    
+        // cout<<rd;
+        v1.clear();
+        if(nextInstruction1.empty()){
+        }
+        else{
+            string token;
+            for (char c : nextInstruction1) {
+                if (c != ' ') {
+                    token += c;
+                }
+                else {
+                    v1.push_back(token);
+                    token.clear();
+                }
+            }
+            if (!token.empty()) {
+                v1.push_back(token);
+            }
+        }
+            if (v1[0] == "add" || v1[0] == "sub"){
+                if(rd == stoi(v1[1].substr(1)) || rd == stoi(v1[2].substr(1)) ||  rd == stoi(v1[3].substr(1))){
+                    isStall = true;
+                    stalls=stalls+1;
+                    return true;
+                }
+            }
+            else if (v1[0] == "lw" || v1[0] == "sw"){
+                if(rd == stoi(v1[1].substr(1)) ){
+                    isStall = true;
+                    stalls=stalls+1;
+                    return true;
+                }
+            }
+            else if (v1[0] == "addi" || v1[0] == "slli" || v1[0] == "srli"){
+                if(rd == stoi(v1[1].substr(1)) ||  rd == stoi(v1[2].substr(1))){
+                    isStall = true;
+                    stalls=stalls+1;
+                    return true;
+                }
+            }
+        }
+    }
+    return false; 
+}
 
 bool detectMemoryHazardStall() {
     clock1++;
@@ -239,7 +337,94 @@ bool detectMemoryHazardStall() {
     }
     return false; 
 }
+void independentExecute1(vector<string>& v,int *memory){
+    map<string, long long int> n;
+    string addressAdder="";
+    string temp="";
+    int t=0;
+    int offset=0;
+    if(v.empty()){
 
+    }
+    else{
+        string opcode = v[0];
+        if (opcode == "add" || opcode == "sub" || opcode == "addi" || opcode == "slli" || opcode == "srli") {
+            int rd = stoi(v[1].substr(1));
+            int rs1 = stoi(v[2].substr(1));
+            if (opcode == "add") {
+                x[rd] = x[rs1] + x[stoi(v[3].substr(1))];
+            } else if (opcode == "sub") {
+                x[rd] = x[rs1] - x[stoi(v[3].substr(1))];
+            } else if (opcode == "addi") {
+                x[rd] = x[rs1] + stoi(v[3]);
+            } else if (opcode == "slli") {
+                x[rd] = x[rs1] << stoi(v[3]);
+            } else if (opcode == "srli") {
+                x[rd] = x[rs1] >> stoi(v[3]);
+            }
+            v.clear();
+        } 
+
+        else if (opcode == "bne" || opcode == "beq" || opcode == "bgt" || opcode == "blt" || opcode == "bge" || opcode == "ble") {
+            int rd = stoi(v[1].substr(1));
+            int rs1 = stoi(v[2].substr(1));
+            string label = v[3];
+            if ((opcode == "bne" && x[rd] != x[rs1]) ||
+                (opcode == "beq" && x[rd] == x[rs1]) ||
+                (opcode == "bgt" && x[rd] > x[rs1]) ||
+                (opcode == "blt" && x[rd] < x[rs1]) ||
+                (opcode == "bge" && x[rd] >= x[rs1]) ||
+                (opcode == "ble" && x[rd] <= x[rs1])) {
+                isStall=true;
+                stalls++;
+                pc = mnew[label];
+            }
+            v.clear();
+        }
+
+    else if(opcode == "j" || opcode == "jump"){
+        string label;
+        label = v[1];
+        isStall=true;
+        stalls++;
+        v.clear();
+        jump(label);
+        return;
+    } 
+    if(opcode==".data") {
+        pc = pc - 1;
+            while(pc < newmemory.size() && newmemory[pc] != ".text"){                
+                string line1 = newmemory[pc];
+                // cout<<line1;
+                string opcode1, opcode2;
+                std::istringstream iss1(line1);
+                iss1 >> opcode1 >>opcode2;              
+                // cout<<opcode1<<" "<<opcode2;
+                if(opcode2==".word"){
+                    int count=0;
+                    int x;
+                    int memsize = 0;
+                    for(int i=0; i<1024; i++){
+                        if(i==0){
+                             long long int lang = reinterpret_cast< long long int>(memory);
+                        }
+                        if(memory[i]!=0){
+                            memsize++;
+                        }
+
+                    }
+                    while(iss1 >> x){ 
+                        memory[count] = x;
+                        count++;
+                    }
+                }
+                pc++;
+            }    
+        } 
+    }
+    v2 = v;
+    v.clear();
+}
 
 void independentExecute(vector<string>& v,int *memory){
     // cout<<"execute";
@@ -479,7 +664,7 @@ int one_cycle(int memory[]){
     if(detectMemoryHazardStall()){
         if(instruction.empty()){
             t++;
-        if(t==4){
+        if(t == 4){
             return 1;
             }                 
         }  
@@ -496,7 +681,7 @@ int one_cycle(int memory[]){
     else{
         if(instruction.empty()){
             t++;
-            if(t == 4+stalls){
+            if(t == 4 + stalls){
                 return 1;
             }         
         }
@@ -511,6 +696,39 @@ int one_cycle(int memory[]){
         }
             
     
+    }
+        isStall1=false;
+        isStall=false;
+}
+    int one_cycle1(int memory[]){
+    if(detectMemoryHazardStall()){
+        if(instruction.empty()){
+            t++;
+        if(t == 1){
+            return 1;
+            }                 
+        }  
+            independentMemory(decodedinstruction,memory);    
+            independentExecute1(decodedinstruction,memory);   
+            decodedinstruction = independentInstructionDecode1(instruction);
+            instruction =  independentInstructionFetch(); 
+
+            independentMemory(decodedinstruction,memory);
+            decodedinstruction = independentInstructionDecode1(instruction);  
+    }
+    else{
+        if(instruction.empty()){
+            t++;
+            if(t == 4 + stalls){
+                return 1;
+            }         
+        }
+        independentMemory(decodedinstruction,memory);
+        independentExecute1(decodedinstruction,memory);
+        if(!isStall){    
+            decodedinstruction = independentInstructionDecode1(instruction);
+        }
+            instruction =  independentInstructionFetch();
     }
         isStall1=false;
         isStall=false;
@@ -555,7 +773,45 @@ void independentRun() {
                 core1_finished = true;
             }
         }
+        clock++;
+    }
 
+    for (int i = 0; i < 1024; ++i) {
+        cout << memory[i] << " ";
+    }
+    cout<<endl;
+        cout<<"the no. of clock cycle for first program is:"<<cores[0].clock1<<endl;
+        cout<<"the no. of Stalls for first program is:"<<cores[0].stalls<<endl;
+        cout<<"the no. of IPC for first program is:"<<(float)cores[0].instructionCount/cores[0].clock1;
+        cout<<endl;
+        for(int i =0;i<32;++i){
+            cout<<cores[0].x[i]<<" ";
+        }
+        cout << endl;
+        for (int i = 0; i < 32; ++i) {
+            cout << cores[1].x[i] << " ";
+        }
+        cout<<endl;
+        cout << "the no. of clock cycle for second program is:" << cores[1].clock1 << endl;
+        cout << "the no. of Stalls for second program is:" << cores[1].stalls<<endl;
+        cout<<"the no. of IPC for first program is:"<<(float)cores[1].instructionCount/cores[1].clock1;
+}
+    void independentRun1() {
+    bool core0_finished = false;
+    bool core1_finished = false;
+
+    while (!core0_finished || !core1_finished) {
+        if (!core0_finished) {
+            if (cores[0].one_cycle1(memory) == 1) {
+                core0_finished = true;
+            }
+        }
+
+        if (!core1_finished) {
+            if (cores[1].one_cycle1(memory + 512) == 1) {
+                core1_finished = true;
+            }
+        }
         clock++;
     }
 
@@ -584,6 +840,19 @@ void independentRun() {
 
 int main() {
     processor p;
-    p.independentRun(); // Start the execution of the processor
+    int n;
+    cout << "choose 1 for program with data forwarding"<<endl;
+    cout << "choose 0 for program without data forwarding"<<endl;
+    cin >> n;
+    if(n == 1){
+        p.independentRun1(); // Start the execution of the processor
+    }
+    else if(n == 0){
+        p.independentRun(); // Start the execution of the processor
+    }
+    else{
+        cout<<"what about 0 and 1 is that you don't understand.";
+    }
+    
     return 0;
 }
