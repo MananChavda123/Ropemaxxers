@@ -305,21 +305,21 @@ bool detectMemoryHazardStall() {
             if (v1[0] == "add" || v1[0] == "sub"){
                 if(rd == stoi(v1[1].substr(1)) || rd == stoi(v1[2].substr(1)) ||  rd == stoi(v1[3].substr(1))){
                     isStall = true;
-                    stalls=stalls+2;
+                    stalls++;
                     return true;
                 }
             }
             else if (v1[0] == "lw" || v1[0] == "sw"){
                 if(rd == stoi(v1[1].substr(1)) ){
                     isStall = true;
-                    stalls=stalls+2;
+                    stalls++;
                     return true;
                 }
             }
             else if (v1[0] == "addi" || v1[0] == "slli" || v1[0] == "srli"){
                 if(rd == stoi(v1[1].substr(1)) ||  rd == stoi(v1[2].substr(1))){
                     isStall = true;
-                    stalls=stalls+2;
+                    stalls++;
                     return true;
                 }
             }
@@ -695,14 +695,16 @@ int one_cycle(int memory[]){
             return 1;
             }                 
         }  
-            independentMemory(decodedinstruction,memory);
+            
             independentWriteBack();       
+            independentMemory(decodedinstruction,memory);
             independentExecute(decodedinstruction,memory);   
             decodedinstruction = independentInstructionDecode(instruction);
             instruction =  independentInstructionFetch(); 
 
-            independentMemory(decodedinstruction,memory);
+            
             independentWriteBack();       
+            independentMemory(decodedinstruction,memory);
             decodedinstruction = independentInstructionDecode(instruction);  
     }
     else{
@@ -712,8 +714,9 @@ int one_cycle(int memory[]){
                 return 1;
             }         
         }
-        independentMemory(decodedinstruction,memory);
+        
         independentWriteBack();   
+        independentMemory(decodedinstruction,memory);
         independentExecute(decodedinstruction,memory);
             if(!isStall){    
             decodedinstruction = independentInstructionDecode(instruction);
