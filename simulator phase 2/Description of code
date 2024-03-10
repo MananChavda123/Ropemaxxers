@@ -1,0 +1,52 @@
+Core Class:
+Attributes:
+- `x[32]`: Array representing 32 registers.
+- `na`: Not sure what this represents, it's initialized to 0.
+- `destination`, `value`: Used during execution to hold destination register and value.
+- `pc`, `size`, `t`: Program counter, size of the program, and a temporary variable respectively.
+- `isStall`, `isStall1`: Flags indicating if a stall is detected in the pipeline.
+- `stalls`: Counter for the number of stalls encountered during execution.
+- `clock1`: Counter for the number of clock cycles.
+- `predictorCorrect`, `predictorIncorrect`: Counters for the number of correct and incorrect branch predictions.
+- `predictorTable`: Map representing the branch predictor table.
+- `instructionCount`: Counter for the number of instructions executed.
+- `v1`, `v2`: Vectors to hold decoded instructions.
+- `newmemory`: Vector to hold the instructions read from the input file.
+- `instruction`: String to hold the current instruction being executed.
+- `mnew`: Map to store labels and their corresponding program counter values.
+
+Methods:
+- `Core::Core(const std::string& filename)`: Constructor initializes the core with given filename, reads instructions from the file, and initializes member variables.
+- `independentInstructionFetch()`: Fetches the next instruction from memory.
+- `independentInstructionDecode()`, `independentInstructionDecode1()`: Decodes the fetched instruction into a vector of strings representing different parts of the instruction.
+- `detectDataHazardStall()`, `detectDataHazardStall1()`: Detects data hazards in the pipeline and inserts stalls if necessary.
+- `detectMemoryHazardStall()`: Detects memory hazards in the pipeline and inserts stalls if necessary.
+- `independentExecute()`, `independentExecute1()`: Executes the decoded instruction.
+- `independentMemory()`: Simulates memory access for load/store instructions.
+- `independentWriteBack()`: Writes back the result of the executed instruction to the register file.
+- `predictBranch()`, `updatePredictor()`: Methods for branch prediction and updating the predictor table.
+- `one_cycle()`, `one_cycle1()`: Executes one cycle of the processor pipeline.
+- `jump()`: Jumps to a specified label in the code.
+
+Processor Class:
+
+Attributes:
+- `cores`: Vector holding instances of Core class.
+- `memory`: Pointer to an array representing memory.
+- `clock`: Counter for the number of clock cycles.
+
+Methods:
+- `Processor::Processor()`: Constructor initializes memory and creates instances of core objects.
+- `independentRun()`, `independentRun1()`: Execute programs in each core independently, with and without data forwarding respectively.
+
+Main Function:
+- Instantiates a Processor object.
+- Prompts the user to choose between running the program with or without data forwarding.
+- Calls the appropriate method to start the execution of the processor.
+
+Summary:
+- The provided code simulates a RISC-V dual-core processor with pipelining.
+- It includes functionality for stalls, branch prediction, and memory operations.
+- The Core class represents a single core with its own pipeline.
+- The Processor class manages multiple cores and orchestrates their execution.
+- The main function initializes the simulation and starts the execution based on user input.
