@@ -174,14 +174,14 @@ bool detectDataHazardStall() {
             if (v1[0] == "add" || v1[0] == "sub"){
                 if(rd == stoi(v1[1].substr(1)) || rd == stoi(v1[2].substr(1)) ||  rd == stoi(v1[3].substr(1))){
                     isStall = true;
-                    stalls=stalls+2;
+                    stalls++;
                     return true;
                 }
             }
             else if (v1[0] == "addi" || v1[0] == "slli" || v1[0] == "srli"){
                 if(rd == stoi(v1[1].substr(1)) ||  rd == stoi(v1[2].substr(1))){
                     isStall = true;
-                    stalls=stalls+2;
+                    stalls++;
                     return true;
                 }
             }
@@ -238,14 +238,12 @@ bool detectDataHazardStall1() {
             if (v1[0] == "add" || v1[0] == "sub"){
                 if(rd == stoi(v1[1].substr(1)) || rd == stoi(v1[2].substr(1)) ||  rd == stoi(v1[3].substr(1))){
                     isStall = true;
-                    stalls=stalls+1;
                     return true;
                 }
             }
             else if (v1[0] == "addi" || v1[0] == "slli" || v1[0] == "srli"){
                 if(rd == stoi(v1[1].substr(1)) ||  rd == stoi(v1[2].substr(1))){
                     isStall = true;
-                    stalls=stalls+1;
                     return true;
                 }
             }
@@ -307,21 +305,21 @@ bool detectMemoryHazardStall() {
             if (v1[0] == "add" || v1[0] == "sub"){
                 if(rd == stoi(v1[1].substr(1)) || rd == stoi(v1[2].substr(1)) ||  rd == stoi(v1[3].substr(1))){
                     isStall = true;
-                    stalls=stalls+3;
+                    stalls=stalls+2;
                     return true;
                 }
             }
             else if (v1[0] == "lw" || v1[0] == "sw"){
                 if(rd == stoi(v1[1].substr(1)) ){
                     isStall = true;
-                    stalls=stalls+3;
+                    stalls=stalls+2;
                     return true;
                 }
             }
             else if (v1[0] == "addi" || v1[0] == "slli" || v1[0] == "srli"){
                 if(rd == stoi(v1[1].substr(1)) ||  rd == stoi(v1[2].substr(1))){
                     isStall = true;
-                    stalls=stalls+3;
+                    stalls=stalls+2;
                     return true;
                 }
             }
