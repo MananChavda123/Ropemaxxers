@@ -604,8 +604,8 @@ void independentMemory(vector<string> &v,int memory[]){
         temp="";t=0;
     } 
     else if (opcode == "la") {
-        int rd = stoi(v[1].substr(1));
-        addressAdder=v[2];
+        int rd = stoi(v2[1].substr(1));
+        addressAdder=v2[2];
               if(!isdigit(v2[2][0])){
                 
                     x[rd] =  reinterpret_cast< long long int>(memory);
