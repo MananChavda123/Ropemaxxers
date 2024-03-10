@@ -1,8 +1,14 @@
 5th March 2024
-Adding a function in the core class for detecting conditional hazards. Also, added two more stages memory and writeback because for the phase-1 we included them in the execute function. We created a new function named one_cycle in the core class and simulated the machine from there.
+Added a function in the core class for detecting conditional hazards. Also, added two more stages: memory and writeback because for the phase-1 we included them in 
+the execute function. We created a new function named one_cycle in the core class and simulated the machine from there.
   
 8th March 2024
-Memory hazard resolving condition added. A mechanism to count the number of stalls in the data Hazards and conditional hazards itself.And conditional statements are added on the basis of these stalls in the one_cycle function.
+Memory hazard resolving condition added. A mechanism to count the number of stalls in the data Hazards and conditional hazards itself.And conditional statements are 
+added on the basis of these stalls in the one_cycle function.Here, we added one stall so that the memory hazard condition might be resolved and conditional hazard 
+will also be resolved .Then added two stalls to data hazard so that this issue might be resolved. 
   
 9th March 2024
-Added IPC and stalls count. Added Branch Predictor
+Added data forwarding condition to main so that the uesr can have choice regarding the execution of the function. In this we have removed the usage of write back 
+stage in which the calculation from execution stage has been brought. We took the functioning of write back to execution stage to enable data forwarding.   
+Added IPC and stalls count. Added two bit Branch Predictor here the predictor statement is set to true and will change after every two wrong predicition thus leading 
+to 100% prediction when the pc cycle count tends to infinity.
