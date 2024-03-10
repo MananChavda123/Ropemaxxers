@@ -1,0 +1,8 @@
+5th March 2024
+Adding a function in the core class for detecting conditional hazards. Also, added two more stages memory and writeback because for the phase-1 we included them in the execute function. We created a new function named one_cycle in the core class and simulated the machine from there.
+  
+8th March 2024
+Memory hazard resolving condition added. A mechanism to count the number of stalls in the data Hazards and conditional hazards itself.And conditional statements are added on the basis of these stalls in the one_cycle function.
+  
+9th March 2024
+Added IPC and stalls count. Added Branch Predictor
