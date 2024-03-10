@@ -1,0 +1,11 @@
+.data
+base: .word 15 9 6 14
+.text
+lw x16 base
+add x10 x16 x10
+add x1 x1 x1
+lw x1 4(x16)
+addi x1 x1 10
+addi x1 x1 10
+add x5 x5 x1
+add x5 x5 x1
