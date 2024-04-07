@@ -75,7 +75,7 @@ public:
         }
         else{
         string instruction = newmemory[pc];
-        cout<<instruction<<endl;
+        // cout<<instruction<<endl;
         instructionCount++;
         pc++;
         return instruction;
@@ -807,10 +807,13 @@ public:
     int associativity;
     int numSets;
     int accessLatency;
+    int memoryAccess,misses;
     vector<vector<CacheBlock>> cache;
 
     Cache(int size, int bSize, int assoc, int latency) : cacheSize(size), blockSize(bSize), associativity(assoc), accessLatency(latency) {
         numSets = cacheSize / (blockSize * associativity);
+        memoryAccess = 0;
+        misses = 0;
         cache.resize(numSets, vector<CacheBlock>(associativity, {false, false, -1, vector<int>(blockSize, 0)}));
     }
 
@@ -818,20 +821,30 @@ public:
     bool accessCache(int address, bool isWrite, vector<int>& data) {
         int setIndex = (address / blockSize) % numSets;
         int tag = address / (blockSize * numSets);
+        memoryAccess++;
+        // cout<<"setIndex"<<setIndex<<endl;
+        cout<<tag<<endl;
+        // cout<<"address"<<address<<endl;
         // Search for the block in the cache
         for (int i = 0; i < associativity; ++i) {
+            cout<<endl<< cache[setIndex][i].tag<<endl;
+            // cout<<endl<< tag<<endl;
             if (cache[setIndex][i].valid && cache[setIndex][i].tag == tag) {
                 // Cache hit
+                
                 if (isWrite) {
                     cache[setIndex][i].dirty = true; // Mark block as dirty if it's a write operation
                     cache[setIndex][i].data = data; // Update cache block data
-                } else {
+                } 
+                else {
                     data = cache[setIndex][i].data; // Read data from cache
                 }
                 return true;
             }
         }
         // Cache miss
+        insertBlock(address,data);
+        misses++;
         return false;
     }
 
@@ -881,8 +894,8 @@ public:
     processor(const vector<string>& filenames, int cacheSize, int blockSize, int associativity, int cacheLatency, int memoryLatency): cache(cacheSize, blockSize, associativity, cacheLatency) {
         memory = new int[1024];
         memory = new int[1024];
-        cores.push_back(core("C:/Users/havis/OneDrive/Desktop/Project/test5.txt"));//choose path from the provided files
-        cores.push_back(core("C:/Users/havis/OneDrive/Desktop/Project/test5.txt"));//choose path from the provided files
+        cores.push_back(core("C:/Users/Manan/Desktop/Manan/test5.txt"));//choose path from the provided files
+        cores.push_back(core("C:/Users/Manan/Desktop/Manan/test4.txt"));//choose path from the provided files
         clock = 0;      
     }
 
@@ -893,7 +906,7 @@ void independentRun() {
     while (!core0_finished || !core1_finished) {
         if (!core0_finished) {            
             int* address = reinterpret_cast<int*>(&cores[0].newmemory[cores[0].pc]);
-            cout<<*address<<endl;
+            // cout<<*address<<endl;
             if(!cache.accessCache(*address,false,data)){cache.accessLatency = cache.accessLatency+50;}
             if (cores[0].one_cycle(memory) == 1) {
                 core0_finished = true;
@@ -902,7 +915,7 @@ void independentRun() {
 
         if (!core1_finished) {
             int* address = reinterpret_cast<int*>(&cores[1].newmemory[cores[1].pc]);
-            cout<<*address<<endl;
+            // cout<<*address<<endl;
             if(!cache.accessCache(*address,false,data)){cache.accessLatency = cache.accessLatency+50;}
             if (cores[1].one_cycle(memory + 512) == 1) {
                 
@@ -919,7 +932,7 @@ void independentRun() {
         // cout<<"the no. of clock cycle for first program is:"<<cores[0].clock1<<endl;
         // cout<<"the no. of Stalls for first program is:"<<cores[0].stalls<<endl;
         // cout<<"the no. of IPC for first program is:"<<(float)cores[0].instructionCount/cores[0].clock1<<endl;
-        cout<<cache.accessLatency<<endl;
+        cout<<cache.accessLatency<<endl<<cache.misses<<endl<<cache.memoryAccess<<endl;
         cout<<endl;
         for(int i =0;i<32;++i){
             // cout<<cores[0].x[i]<<" ";
@@ -976,7 +989,7 @@ void independentRun() {
 };
 
 int main() {
-    vector<string> filenames = {"C:/Users/havis/OneDrive/Desktop/Project/test4.txt", "C:/Users/havis/OneDrive/Desktop/Project/test4.txt"};
+    vector<string> filenames = {"C:/Users/Manan/Desktop/Manan/test5.txt", "C:/Users/Manan/Desktop/Manan/test3.txt"};
     processor p(filenames, 8192, 64, 1, 10, 50);
 
     // Simulate accessing a single address repeatedly
