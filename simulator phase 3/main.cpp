@@ -6,6 +6,7 @@
 #include <sstream>
 #include<math.h>
 #include <cmath>
+#include <algorithm>
 using namespace std;
 
 class core {
@@ -802,26 +803,33 @@ int one_cycle(int memory[]){
 // Define Cache Block structure
 struct CacheBlock {
     bool valid;
-    bool dirty;
     int tag;
     vector<int> data;
+    int accessTime; // For LRU and MRU
 };
 
 class Cache {
-public:
+private:
     int cacheSize;
     int blockSize;
     int associativity;
+    bool replacement_policy;
+    
     int numSets;
-    int accessLatency;
-    int memoryAccess,misses;
+    
     vector<vector<CacheBlock>> cache;
 
-    Cache(int size, int bSize, int assoc, int latency) : cacheSize(size), blockSize(bSize), associativity(assoc), accessLatency(latency) {
+public:
+int accessLatency;
+int memoryAccess;
+    int misses;
+    Cache(int size, int bSize, int assoc, int latency) 
+        : cacheSize(size), blockSize(bSize), associativity(assoc), accessLatency(latency) {
         numSets = cacheSize / (blockSize * associativity);
         memoryAccess = 0;
         misses = 0;
-        cache.resize(numSets, vector<CacheBlock>(associativity, {false, false, -1, vector<int>(blockSize, 0)}));
+       replacement_policy = true;//for LRU and false for MRU
+        cache.resize(numSets, vector<CacheBlock>(associativity, {false, -1, vector<int>(blockSize, 0), 0}));
     }
 
     // Access cache to read/write data
@@ -829,28 +837,22 @@ public:
         int setIndex = (address / blockSize) % numSets;
         int tag = address / (blockSize * numSets);
         memoryAccess++;
-        // cout<<"setIndex"<<setIndex<<endl;
-        // cout<<tag<<endl;
-        // cout<<"address"<<address<<endl;
+
         // Search for the block in the cache
         for (int i = 0; i < associativity; ++i) {
-            // cout<<endl<< cache[setIndex][i].tag<<endl;
-            // cout<<endl<< tag<<endl;
             if (cache[setIndex][i].valid && cache[setIndex][i].tag == tag) {
                 // Cache hit
-                
+                cache[setIndex][i].accessTime = memoryAccess; // Update access time
                 if (isWrite) {
-                    cache[setIndex][i].dirty = true; // Mark block as dirty if it's a write operation
-                    cache[setIndex][i].data = data; // Update cache block data
-                } 
-                else {
+                    cache[setIndex][i].data = data; // Update cache block data if it's a write operation
+                } else {
                     data = cache[setIndex][i].data; // Read data from cache
                 }
                 return true;
             }
         }
         // Cache miss
-        insertBlock(address,data);
+        insertBlock(address, data);
         misses++;
         return false;
     }
@@ -861,7 +863,6 @@ public:
         int tag = address / (blockSize * numSets);
 
         // Find an empty slot or evict a block based on a replacement policy
-        // For simplicity, let's assume a direct-mapped cache where replacement is not needed
         int emptySlot = -1;
         for (int i = 0; i < associativity; ++i) {
             if (!cache[setIndex][i].valid) {
@@ -875,12 +876,40 @@ public:
             cache[setIndex][emptySlot].valid = true;
             cache[setIndex][emptySlot].tag = tag;
             cache[setIndex][emptySlot].data = data;
+            cache[setIndex][emptySlot].accessTime = memoryAccess; // Update access time
         } else {
-            // Implement replacement policy here (e.g., LRU)
-            // For simplicity, we'll assume no replacement is needed in this example
+            // Implement replacement policy here (LRU or MRU)
+           int replaceIndex = -1;
+            if (replacement_policy) {
+                // Find the least recently used block
+                int minAccessTime = numeric_limits<int>::max();
+                for (int i = 0; i < associativity; ++i) {
+                    if (cache[setIndex][i].accessTime < minAccessTime) {
+                        minAccessTime = cache[setIndex][i].accessTime;
+                        replaceIndex = i;
+                    }
+                }
+            } else {
+                // Find the most recently used block
+                int maxAccessTime = numeric_limits<int>::min();
+                for (int i = 0; i < associativity; ++i) {
+                    if (cache[setIndex][i].accessTime > maxAccessTime) {
+                        maxAccessTime = cache[setIndex][i].accessTime;
+                        replaceIndex = i;
+                    }
+                }
+            }
+
+            // Evict the block based on the replacement policy (LRU or MRU)
+            cache[setIndex][replaceIndex].valid = true;
+            cache[setIndex][replaceIndex].tag = tag;
+            cache[setIndex][replaceIndex].data = data;
+            cache[setIndex][replaceIndex].accessTime = memoryAccess; // Update access time
         }
     }
 
+    // Get access latency
+    
     // Get access latency
     int getAccessLatency() {
         return accessLatency;
@@ -900,8 +929,8 @@ public:
 
     processor(const vector<string>& filenames, int cacheSize, int blockSize, int associativity, int cacheLatency, int memoryLatency): cache(cacheSize, blockSize, associativity, cacheLatency) {
         memory = new int[1024];
-        cores.push_back(core("C:/Users/havis/OneDrive/Desktop/Project/test2.txt"));//choose path from the provided files
-        cores.push_back(core("C:/Users/havis/OneDrive/Desktop/Project/test1.asm"));//choose path from the provided files
+        cores.push_back(core("C:/Users/Manan/Desktop/Manan/test5.txt"));//choose path from the provided files
+        cores.push_back(core("C:/Users/Manan/Desktop/Manan/test5.txt"));//choose path from the provided files
         clock = 0;      
     }
 
@@ -947,8 +976,10 @@ void independentRun() {
     cout<<endl;
         cout<<"the no. of clock cycle for first program is:"<<cores[0].clock1<<endl;
         cout<<"the no. of Stalls for first program is:"<<cores[0].stalls<<endl;
-        cout<<"the no. of IPC for first program is:"<<(float)cores[0].instructionCount/cores[0].clock1<<endl;
+        cout<<"the no. of IPC for first program is:"<<(float)cores[0].instructionCount/(cores[0].clock1+cache.accessLatency)<<endl;
         cout<<cache.accessLatency<<endl<<cache.misses<<endl<<cache.memoryAccess<<endl;
+                cout<<"Miss rate:"<<((float)cache.misses/(float)cache.memoryAccess)*100<<endl;
+
         cout<<endl;
         for(int i =0;i<32;++i){
             cout<<cores[0].x[i]<<" ";
@@ -960,7 +991,7 @@ void independentRun() {
         cout<<endl;
         cout << "the no. of clock cycle for second program is:" << cores[1].clock1 << endl;
         cout << "the no. of Stalls for second program is:" << cores[1].stalls<<endl;
-        cout<<"the no. of IPC for first program is:"<<(float)cores[1].instructionCount/cores[1].clock1<<endl;
+        cout<<"the no. of IPC for first program is:"<<(float)cores[1].instructionCount/(cores[1].clock1+cache.accessLatency)<<endl;
 }
     void independentRun1() {
     bool core0_finished = false;
@@ -1003,8 +1034,9 @@ void independentRun() {
     cout<<endl;
         cout<<"the no. of clock cycle for first program is:"<<cores[0].clock1<<endl;
         cout<<"the no. of Stalls for first program is:"<<cores[0].stalls<<endl;
-        cout<<"the no. of IPC for first program is:"<<(float)cores[0].instructionCount/cores[0].clock1;
-        cout<<cache.accessLatency<<endl<<cache.misses<<endl<<cache.memoryAccess<<endl;
+        cout<<"the no. of IPC for first program is:"<<(float)cores[0].instructionCount/(cores[0].clock1+cache.accessLatency);
+        // cout<<cache.accessLatency<<endl<<cache.misses<<endl<<cache.memoryAccess<<endl;
+        cout<<"Miss rate:"<<((float)cache.misses/(float)cache.memoryAccess)*100<<endl;
         cout<<endl;
         for(int i =0;i<32;++i){
             cout<<cores[0].x[i]<<" ";
@@ -1016,12 +1048,12 @@ void independentRun() {
         cout<<endl;
         cout << "the no. of clock cycle for second program is:" << cores[1].clock1 << endl;
         cout << "the no. of Stalls for second program is:" << cores[1].stalls<<endl;
-        cout<<"the no. of IPC for first program is:"<<(float)cores[1].instructionCount/cores[1].clock1;
+        cout<<"the no. of IPC for first program is:"<<(float)cores[1].instructionCount/(cores[1].clock1+cache.accessLatency);
     }
 };
 
 int main() {
-    vector<string> filenames = {"C:/Users/havis/OneDrive/Desktop/Project/test4.txt", "C:/Users/havis/OneDrive/Desktop/Project/test4.txt"};
+    vector<string> filenames = {"C:/Users/Manan/Desktop/Manan/test5.txt", "C:/Users/Manan/Desktop/Manan/test5.txt"};
     processor p(filenames, 1024, 64, 4, 10, 50);
     int address = 1024; // Example address
     bool isWrite = false; // Read operation
