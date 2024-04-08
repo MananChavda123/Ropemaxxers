@@ -28,7 +28,8 @@ public:
     std::string filename1;
     map<string, int> mnew;
     int latency,cacheMissRate,hitRate;
-    bool hit;
+    long long int address;
+    bool hit,isMemoryOperation;
     
     core(const std::string& filename) : filename1(filename), pc(0), size(0), predictorCorrect(0), predictorIncorrect(0) {
         pc = 0;
@@ -576,6 +577,8 @@ void independentMemory(vector<string> &v,int memory[]){
               if(!isdigit(v2[2][0])){
                 
                     x[rd] =  reinterpret_cast< long long int>(memory);
+                    isMemoryOperation = true;
+                    address = x[rd];
                     // cout<<x[rd]<<endl;
                 }
                 else{
@@ -603,6 +606,8 @@ void independentMemory(vector<string> &v,int memory[]){
         int rs1 = stoi(temp.substr(1));
         int* array_ptr = reinterpret_cast<int*>(x[rs1]+offset);
         x[rd] = *array_ptr;
+        isMemoryOperation = true;
+        address = *array_ptr;
         // cout<<" "<<x[rd]<<" "<<x[rs1]+offset<<endl;
                 }
 
@@ -672,6 +677,8 @@ void independentMemory(vector<string> &v,int memory[]){
         }
         int rs1 = stoi(temp.substr(1));
         int* memory_ptr = reinterpret_cast<int*>(x[rs1] + offset);
+        isMemoryOperation = true;
+        address = *memory_ptr;
         *memory_ptr = x[rd];
         temp = "";
         t = 0;
@@ -823,11 +830,11 @@ public:
         int tag = address / (blockSize * numSets);
         memoryAccess++;
         // cout<<"setIndex"<<setIndex<<endl;
-        cout<<tag<<endl;
+        // cout<<tag<<endl;
         // cout<<"address"<<address<<endl;
         // Search for the block in the cache
         for (int i = 0; i < associativity; ++i) {
-            cout<<endl<< cache[setIndex][i].tag<<endl;
+            // cout<<endl<< cache[setIndex][i].tag<<endl;
             // cout<<endl<< tag<<endl;
             if (cache[setIndex][i].valid && cache[setIndex][i].tag == tag) {
                 // Cache hit
@@ -888,14 +895,13 @@ private:
     Cache cache;
     vector<string> decodedInstruction;
     vector<int> data;
-
+    bool isMemoryOperation;
 public:
 
     processor(const vector<string>& filenames, int cacheSize, int blockSize, int associativity, int cacheLatency, int memoryLatency): cache(cacheSize, blockSize, associativity, cacheLatency) {
         memory = new int[1024];
-        memory = new int[1024];
-        cores.push_back(core("C:/Users/Manan/Desktop/Manan/test5.txt"));//choose path from the provided files
-        cores.push_back(core("C:/Users/Manan/Desktop/Manan/test4.txt"));//choose path from the provided files
+        cores.push_back(core("C:/Users/havis/OneDrive/Desktop/Project/test2.txt"));//choose path from the provided files
+        cores.push_back(core("C:/Users/havis/OneDrive/Desktop/Project/test1.asm"));//choose path from the provided files
         clock = 0;      
     }
 
@@ -904,7 +910,13 @@ void independentRun() {
     bool core1_finished = false;
 
     while (!core0_finished || !core1_finished) {
-        if (!core0_finished) {            
+        if (!core0_finished) {
+            isMemoryOperation = cores[0].isMemoryOperation;
+            if(isMemoryOperation){
+                if(!cache.accessCache(cores[0].address,false,data)){cache.accessLatency = cache.accessLatency+50;}
+                }
+                cores[0].isMemoryOperation = false;  
+            if(isMemoryOperation){}          
             int* address = reinterpret_cast<int*>(&cores[0].newmemory[cores[0].pc]);
             // cout<<*address<<endl;
             if(!cache.accessCache(*address,false,data)){cache.accessLatency = cache.accessLatency+50;}
@@ -914,11 +926,15 @@ void independentRun() {
         }
 
         if (!core1_finished) {
+            isMemoryOperation = cores[1].isMemoryOperation;
+            if(isMemoryOperation){
+                if(!cache.accessCache(cores[1].address,false,data)){cache.accessLatency = cache.accessLatency+50;}
+                }
+                cores[1].isMemoryOperation = false;
             int* address = reinterpret_cast<int*>(&cores[1].newmemory[cores[1].pc]);
             // cout<<*address<<endl;
             if(!cache.accessCache(*address,false,data)){cache.accessLatency = cache.accessLatency+50;}
             if (cores[1].one_cycle(memory + 512) == 1) {
-                
                 core1_finished = true;
             }
         }
@@ -926,25 +942,25 @@ void independentRun() {
     }
 
     for (int i = 0; i < 1024; ++i) {
-        // cout << memory[i] << " ";
+        cout << memory[i] << " ";
     }
     cout<<endl;
-        // cout<<"the no. of clock cycle for first program is:"<<cores[0].clock1<<endl;
-        // cout<<"the no. of Stalls for first program is:"<<cores[0].stalls<<endl;
-        // cout<<"the no. of IPC for first program is:"<<(float)cores[0].instructionCount/cores[0].clock1<<endl;
+        cout<<"the no. of clock cycle for first program is:"<<cores[0].clock1<<endl;
+        cout<<"the no. of Stalls for first program is:"<<cores[0].stalls<<endl;
+        cout<<"the no. of IPC for first program is:"<<(float)cores[0].instructionCount/cores[0].clock1<<endl;
         cout<<cache.accessLatency<<endl<<cache.misses<<endl<<cache.memoryAccess<<endl;
         cout<<endl;
         for(int i =0;i<32;++i){
-            // cout<<cores[0].x[i]<<" ";
+            cout<<cores[0].x[i]<<" ";
         }
         cout << endl;
         for (int i = 0; i < 32; ++i) {
-            // cout << cores[1].x[i] << " ";
+            cout << cores[1].x[i] << " ";
         }
         cout<<endl;
-        // cout << "the no. of clock cycle for second program is:" << cores[1].clock1 << endl;
-        // cout << "the no. of Stalls for second program is:" << cores[1].stalls<<endl;
-        // cout<<"the no. of IPC for first program is:"<<(float)cores[1].instructionCount/cores[1].clock1<<endl;
+        cout << "the no. of clock cycle for second program is:" << cores[1].clock1 << endl;
+        cout << "the no. of Stalls for second program is:" << cores[1].stalls<<endl;
+        cout<<"the no. of IPC for first program is:"<<(float)cores[1].instructionCount/cores[1].clock1<<endl;
 }
     void independentRun1() {
     bool core0_finished = false;
@@ -952,12 +968,28 @@ void independentRun() {
 
     while (!core0_finished || !core1_finished) {
         if (!core0_finished) {
+            isMemoryOperation = cores[0].isMemoryOperation;
+            if(isMemoryOperation){
+                if(!cache.accessCache(cores[0].address,false,data)){cache.accessLatency = cache.accessLatency+50;}
+                }
+                cores[0].isMemoryOperation = false;
+            int* address = reinterpret_cast<int*>(&cores[0].newmemory[cores[0].pc]);
+            // cout<<*address<<endl;
+            if(!cache.accessCache(*address,false,data)){cache.accessLatency = cache.accessLatency+50;}
             if (cores[0].one_cycle1(memory) == 1) {
                 core0_finished = true;
             }
         }
 
         if (!core1_finished) {
+            isMemoryOperation = cores[1].isMemoryOperation;
+            if(isMemoryOperation){
+                if(!cache.accessCache(cores[1].address,false,data)){cache.accessLatency = cache.accessLatency+50;}
+                }
+                cores[1].isMemoryOperation = false;
+            int* address = reinterpret_cast<int*>(&cores[0].newmemory[cores[1].pc]);
+            // cout<<*address<<endl;
+            if(!cache.accessCache(*address,false,data)){cache.accessLatency = cache.accessLatency+50;}
             if (cores[1].one_cycle1(memory + 512) == 1) {
                 core1_finished = true;
             }
@@ -972,6 +1004,7 @@ void independentRun() {
         cout<<"the no. of clock cycle for first program is:"<<cores[0].clock1<<endl;
         cout<<"the no. of Stalls for first program is:"<<cores[0].stalls<<endl;
         cout<<"the no. of IPC for first program is:"<<(float)cores[0].instructionCount/cores[0].clock1;
+        cout<<cache.accessLatency<<endl<<cache.misses<<endl<<cache.memoryAccess<<endl;
         cout<<endl;
         for(int i =0;i<32;++i){
             cout<<cores[0].x[i]<<" ";
@@ -985,29 +1018,14 @@ void independentRun() {
         cout << "the no. of Stalls for second program is:" << cores[1].stalls<<endl;
         cout<<"the no. of IPC for first program is:"<<(float)cores[1].instructionCount/cores[1].clock1;
     }
-
 };
 
 int main() {
-    vector<string> filenames = {"C:/Users/Manan/Desktop/Manan/test5.txt", "C:/Users/Manan/Desktop/Manan/test3.txt"};
-    processor p(filenames, 8192, 64, 1, 10, 50);
-
-    // Simulate accessing a single address repeatedly
+    vector<string> filenames = {"C:/Users/havis/OneDrive/Desktop/Project/test4.txt", "C:/Users/havis/OneDrive/Desktop/Project/test4.txt"};
+    processor p(filenames, 1024, 64, 4, 10, 50);
     int address = 1024; // Example address
     bool isWrite = false; // Read operation
     vector<int> data;
-
-    // Access the cache multiple times with the same address
-    // for (int i = 0; i < 10; ++i) {
-    //     cout << "Accessing address: " << address << endl;
-    //     if (!processor.accessCache(address, isWrite, data)) {
-    //         cout << "Cache miss! Fetching data from memory..." << endl;
-    //         data = processor.fetchDataFromMemory(address);
-    //         processor.cache.insertBlock(address, data);
-    //     } else {
-    //         cout << "Cache hit! Data retrieved from cache." << endl;
-    //     }
-    // }
     int n;
     cout << "choose 1 for program with data forwarding"<<endl;
     cout << "choose 0 for program without data forwarding"<<endl;
