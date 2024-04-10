@@ -1,12 +1,16 @@
 **Started working on Phase-3 on 06-04-2024**
 06-03-2024
-We created a struct named CacheBlock with elements tag,data,and valid.Valid was boolean data type,tag was int and data was vector<int>.We also created a Cache class in which we created basic cache methods:accessCache,insertBlock and getLatency;all performing their respective functions like their method names.We declared an object of Cache class in the processor and simulated the cache functions from the processor class.
+We created a struct named CacheBlock with elements tag,data,and valid.Valid was boolean data type,tag was int and data was vector<int>.We also created a Cache class 
+in which we created basic cache methods:accessCache,insertBlock and getLatency;all performing their respective functions like their method names.We declared an 
+object of Cache class in the processor and simulated the cache functions from the processor class.
 
 07-03-2024
-In the processor class,we created a mechanism so that we can access cache based on the instruction it fetches.We created two variables to count misses and totalmemory accesses.We also added a missrate variable and calculated it for our half-baked program.
+In the processor class,we created a mechanism so that we can access cache based on the instruction it fetches.We created two variables to count misses and 
+totalmemory accesses.We also added a missrate variable and calculated it for our half-baked program.
 
 08-03-2024
-now,we decided to make some changes to lw and sw so that cache can be incorporated in it.It worked and then we added replacement policies(LRU and MRU) in the insertBlock functions which can be executed if there are no empty slots.
+now,we decided to make some changes to lw and sw so that cache can be incorporated in it.It worked and then we added replacement policies(LRU and MRU) in the 
+insertBlock functions which can be executed if there are no empty slots.
 
 09-03-2024
 We made some minor changes in lw and sw functions.With this we added some cout statements and completed the project.
