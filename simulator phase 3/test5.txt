@@ -1,0 +1,7 @@
+addi x1 x1 3
+loop: 
+bge x2 x1 exit
+addi x2 x1 1
+j loop
+exit:
+addi x0 x0 0
