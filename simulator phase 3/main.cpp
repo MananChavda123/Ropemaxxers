@@ -1080,8 +1080,8 @@ void independentRun() {
 };
 
 int main() {
-    vector<string> filenames = {"C:/Users/Manan/Desktop/Manan/test5.txt", "C:/Users/Manan/Desktop/Manan/test5.txt"};
-    processor p(filenames, 256, 64, 4, 10, 50);
+    vector<string> filenames = {"C:/Users/Manan/Desktop/Manan/test5.txt", "C:/Users/Manan/Desktop/Manan/test5.txt"};//Change filenames both here and in the place provided in processor to get the correct output.
+    processor p(filenames,8192, 64, 4, 10, 50);//Cache size is initially taken 8kB,vary cache size and associativity as per your need.
     int address = 1024; // Example address
     bool isWrite = false; // Read operation
     vector<int> data;
