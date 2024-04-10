@@ -1,1 +1,43 @@
-The above code defines a pipeline processor with two cores, each executing a separate program. The processor uses a cache to store frequently accessed data, and the cache is implemented using a Cache class that supports LRU and MRU replacement policies. The core class defines the pipeline stages for each core, including instruction fetch, instruction decode, execute, memory access, and write back. The processor class manages the execution of both cores, and it uses a cache object to access memory. The main function reads in two program files and executes them using the processor object. The user can choose to run the programs with or without data forwarding. The output includes the number of clock cycles, stalls, IPC, and the final register values for each core, as well as the cache access latency, misses, and miss rate.
+CacheBlock Struct:
+valid: Indicates whether the cache block contains valid data.
+tag: Represents the tag bits associated with the block, used for identifying the block's address.
+data: Stores the actual data held within the cache block.
+accessTime: Tracks the access time of the block, which is used for implementing replacement policies such as LRU or MRU.
+
+
+Cache Class:
+Private Members:
+cacheSize: Total size of the cache memory in bytes.
+blockSize: Size of each cache block in bytes.
+associativity: Number of blocks per set in the cache.
+replacement_policy: Boolean flag indicating the chosen replacement policy (true for LRU, false for MRU).
+numSets: Number of sets in the cache memory.
+cache: 2D vector representing the cache memory, organized as sets and blocks within each set.
+Public Members:
+accessLatency: Access latency of the cache memory.
+memoryAccess: Total number of memory accesses made to the cache.
+misses: Total number of cache misses encountered during memory accesses.
+
+
+Constructor:
+Initializes the cache memory with the provided parameters: size, block size, associativity, and access latency.
+Calculates the number of sets in the cache based on the size, block size, and associativity.
+Initializes the cache memory as a 2D vector of CacheBlocks, with each set containing the specified number of blocks.
+
+
+accessCache Method:
+Accepts an address and a boolean flag indicating whether the operation is a read or write.
+Searches for the specified block in the cache:
+If found (cache hit), updates the access time and reads or writes data accordingly.
+If not found (cache miss), inserts the block into the cache and increments the miss count.
+
+
+insertBlock Method:
+Accepts an address and data to be inserted into the cache.
+Determines the set index and tag for the given address.
+Finds an empty slot or evicts a block based on the chosen replacement policy (LRU or MRU).
+Updates the cache with the new block, including validity, tag, data, and access time.
+
+
+Overall Functionality:
+The Cache class simulates the behavior of a cache memory system, tracking memory accesses, cache hits, and cache misses. It handles the insertion of data into the cache and implements replacement policies to manage cache evictions. The choice between LRU and MRU replacement policies affects the eviction strategy used when the cache is full.
