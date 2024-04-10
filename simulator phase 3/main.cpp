@@ -931,7 +931,7 @@ private:
     bool isMemoryOperation,isSwMemoryOperation;
 public:
 
-    processor(const vector<string>& filenames, int cacheSize, int blockSize, int associativity, int cacheLatency, int memoryLatency): cache(cacheSize, blockSize, associativity, cacheLatency) {
+    processor(int cacheSize, int blockSize, int associativity, int cacheLatency, int memoryLatency): cache(cacheSize, blockSize, associativity, cacheLatency) {
         memory = new int[1024];
         cores.push_back(core("C:/Users/havis/OneDrive/Desktop/Project/test2.txt"));//choose path from the provided files
         cores.push_back(core("C:/Users/havis/OneDrive/Desktop/Project/test5.txt"));//choose path from the provided files
@@ -1080,8 +1080,7 @@ void independentRun() {
 };
 
 int main() {
-    vector<string> filenames = {"C:/Users/Manan/Desktop/Manan/test5.txt", "C:/Users/Manan/Desktop/Manan/test5.txt"};//Change filenames both here and in the place provided in processor to get the correct output.
-    processor p(filenames,8192, 64, 4, 10, 50);//Cache size is initially taken 8kB,vary cache size and associativity as per your need.
+    processor p(8192, 64, 4, 10, 50);//Cache size is initially taken 8kB,vary cache size and associativity as per your need.
     int address = 1024; // Example address
     bool isWrite = false; // Read operation
     vector<int> data;
