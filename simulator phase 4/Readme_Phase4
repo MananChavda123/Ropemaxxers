@@ -12,3 +12,11 @@ memoryAccess: Total number of memory accesses made to the cache.
 misses: Total number of cache misses encountered during memory accesses.
 
 (This is equivalent to the previous cache class, just the cache size differs in L2 cache. It is 4 times of L1 cache.)
+
+Here, we have introduced multi level cache to the code. We have added a L2 cache to the code which is 4 times the size of
+L1 cache. Here, we have used non inclusive policy for the L2 cache in which the data address which is absent in both L1 and
+L2 is retrived from the main memory and then placed in both L1 and L2 cache. But as we remove both the data address from L1 
+and L2 cache in inclusive policy we will not perform such similar functionality in this code to maintain the non inclusive
+nature of our cache. Here, if the address is not found in L1 cache there will be a penalty of 10 clock cycles and if the 
+address is not found in L2 then to retrive the address it will pay a penalty of 40 more clock cycles in total 50 clock
+cycles if the address is absent in both the cache. All this functionality is of cache class is handled in processor.
