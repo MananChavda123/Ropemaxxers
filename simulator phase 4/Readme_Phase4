@@ -1,0 +1,14 @@
+Cache2 Class:
+Private Members:
+cacheSize: Total size of the cache memory in bytes.
+blockSize: Size of each cache block in bytes.
+associativity: Number of blocks per set in the cache.
+replacement_policy: Boolean flag indicating the chosen replacement policy (true for LRU, false for MRU).
+numSets: Number of sets in the cache memory.
+cache: 2D vector representing the cache memory, organized as sets and blocks within each set.
+Public Members:
+accessLatency: Access latency of the cache memory.
+memoryAccess: Total number of memory accesses made to the cache.
+misses: Total number of cache misses encountered during memory accesses.
+
+(This is equivalent to the previous cache class, just the cache size differs in L2 cache. It is 4 times of L1 cache.)
